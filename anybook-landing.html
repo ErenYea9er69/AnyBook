@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnyBook: Any Book, Every Angle</title>
+<meta name="description" content="Search AnyBook's library of hand-written summaries, six angles deep: argument, chapters, quotes, real world use, pushback, and author background. Can't find a title? Request it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;0,700;0,900;1,500&family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+  /* ---------- tokens ---------- */
+  :root{
+    --ink:#0A130E;
+    --ink-deep:#040807;
+    --ink-soft:#101E17;
+    --paper:#F2EAD6;
+    --paper-dim:#E7DBBE;
+    --gold:#C7A05A;
+    --gold-bright:#E3C077;
+    --rust:#B4543A;
+    --sage:#83A78E;
+    --dust:#5E7F91;
+    --mustard:#CBA35F;
+    --on-ink:#EFE6D2;
+    --on-ink-dim:#93A79A;
+    --on-paper:#14201A;
+    --on-paper-dim:#56655B;
+    --serif:'Fraunces', serif;
+    --sans:'Libre Franklin', sans-serif;
+    --mono:'JetBrains Mono', monospace;
+    --edge: 1200px;
+    --radius: 3px;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--ink);
+    color:var(--on-ink);
+    font-family:var(--sans);
+    font-weight:400;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img,svg{ display:block; max-width:100%; }
+  a{ color:inherit; text-decoration:none; }
+  ul{ list-style:none; }
+  button{ font-family:inherit; cursor:pointer; border:none; background:none; }
+
+  ::selection{ background:var(--gold); color:var(--ink-deep); }
+
+  :focus-visible{ outline:2px solid var(--gold-bright); outline-offset:3px; }
+
+  /* film grain / cloth texture overlay for dark sections */
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:2;
+    opacity:0.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .wrap{ max-width:var(--edge); margin:0 auto; padding:0 40px; }
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--gold);
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:''; width:24px; height:1px; background:var(--gold);
+  }
+  section.on-paper .eyebrow{ color:var(--rust); }
+  section.on-paper .eyebrow::before{ background:var(--rust); }
+
+  h1,h2,h3{ font-family:var(--serif); font-weight:600; letter-spacing:-0.01em; }
+
+  /* ---------- reveal on scroll ---------- */
+  .reveal{ opacity:0; transform:translateY(22px); transition:opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.is-visible{ opacity:1; transform:translateY(0); }
+  .reveal.d1{ transition-delay:0.08s; }
+  .reveal.d2{ transition-delay:0.16s; }
+  .reveal.d3{ transition-delay:0.24s; }
+  .reveal.d4{ transition-delay:0.32s; }
+  .reveal.d5{ transition-delay:0.4s; }
+  .reveal.d6{ transition-delay:0.48s; }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .reveal{ opacity:1; transform:none; transition:none; }
+    *{ animation:none !important; }
+  }
+
+  /* ---------- nav ---------- */
+  header.nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(4,8,7,0.72);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(199,160,90,0.16);
+    transition:background 0.3s ease;
+  }
+  header.nav .wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    height:78px;
+  }
+  .logo{
+    font-family:var(--serif); font-weight:700; font-size:22px; letter-spacing:-0.01em;
+    display:flex; align-items:baseline; gap:6px;
+  }
+  .logo .dot{ color:var(--gold); }
+  nav.links{ display:flex; gap:36px; }
+  nav.links a{
+    font-size:14px; color:var(--on-ink-dim);
+    transition:color 0.2s ease; position:relative;
+  }
+  nav.links a:hover{ color:var(--on-ink); }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    font-family:var(--sans); font-weight:600; font-size:14px;
+    padding:13px 26px; border-radius:var(--radius);
+    transition:transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+  .btn-gold{ background:var(--gold); color:var(--ink-deep); }
+  .btn-gold:hover{ background:var(--gold-bright); transform:translateY(-2px); box-shadow:0 10px 24px rgba(199,160,90,0.28); }
+  .btn-outline{
+    border:1px solid rgba(243,235,216,0.3); color:var(--on-ink);
+  }
+  .btn-outline:hover{ border-color:var(--gold); color:var(--gold-bright); }
+  .btn-dark{ background:var(--ink-deep); color:var(--paper); }
+  .btn-dark:hover{ background:#000; transform:translateY(-2px); }
+  .btn-sm{ padding:10px 18px; font-size:13px; }
+
+  .mobile-toggle{ display:none; }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    padding:96px 0 60px;
+    overflow:hidden;
+  }
+  .hero .wrap{
+    display:grid; grid-template-columns:1.1fr 0.9fr; gap:60px; align-items:center;
+  }
+  .hero h1{
+    font-size:clamp(40px, 5.4vw, 68px);
+    line-height:1.04;
+    margin-bottom:24px;
+  }
+  .hero h1 em{ font-style:italic; color:var(--gold-bright); font-weight:500; }
+  .hero p.lede{
+    font-size:18px; color:var(--on-ink-dim); max-width:480px; margin-bottom:34px;
+  }
+  .hero-actions{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:44px; }
+
+  .search-mock{
+    display:flex; align-items:center; gap:12px;
+    background:var(--ink-soft);
+    border:1px solid rgba(199,160,90,0.3);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    max-width:460px;
+  }
+  .search-mock svg{ flex-shrink:0; color:var(--gold); }
+  .search-mock .type-field{
+    font-family:var(--mono); font-size:14px; color:var(--on-ink);
+    flex:1; white-space:nowrap; overflow:hidden;
+  }
+  .search-mock .type-field::after{
+    content:''; display:inline-block; width:2px; height:14px; background:var(--gold-bright);
+    margin-left:2px; vertical-align:middle; animation:blink 1s step-end infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  .stat-row{
+    display:flex; gap:40px; margin-top:8px; flex-wrap:wrap;
+  }
+  .stat-row .stat b{
+    display:block; font-family:var(--mono); font-size:22px; color:var(--gold-bright);
+  }
+  .stat-row .stat span{ font-size:12px; color:var(--on-ink-dim); letter-spacing:0.03em; }
+
+  /* shelf */
+  .shelf-frame{ position:relative; }
+  .shelf{
+    display:flex; align-items:flex-end; gap:6px; height:240px;
+    padding:0 6px 16px;
+    border-bottom:6px solid var(--ink-deep);
+    position:relative;
+  }
+  .shelf::after{
+    content:''; position:absolute; left:-16px; right:-16px; bottom:-6px; height:14px;
+    background:var(--ink-deep); border-radius:0 0 6px 6px;
+    box-shadow:0 14px 26px rgba(0,0,0,0.45);
+  }
+  .spine{
+    border-radius:4px 4px 0 0;
+    flex:1 1 auto;
+    position:relative;
+    transition:transform 0.35s ease, box-shadow 0.35s ease, filter 0.35s ease;
+    opacity:0; transform:translateY(16px);
+    animation:rise 0.6s ease forwards;
+  }
+  .spine::before{
+    content:''; position:absolute; left:0; right:0; top:34%; height:2px; background:rgba(0,0,0,0.18);
+  }
+  .spine::after{
+    content:''; position:absolute; left:0; right:0; top:calc(34% + 10px); height:1px; background:rgba(0,0,0,0.12);
+  }
+  .spine:hover{ transform:translateY(-16px) rotate(-2deg); filter:brightness(1.12); box-shadow:0 18px 22px rgba(0,0,0,0.35); }
+  @keyframes rise{ to{ opacity:1; transform:translateY(0); } }
+
+  .shelf-caption{
+    display:flex; justify-content:space-between; margin-top:14px;
+    font-family:var(--mono); font-size:11px; color:var(--on-ink-dim); letter-spacing:0.06em;
+  }
+
+  /* ---------- section shell ---------- */
+  section{ padding:120px 0; position:relative; }
+  section.on-paper{ background:var(--paper); color:var(--on-paper); }
+  .section-head{ max-width:640px; margin-bottom:64px; }
+  .section-head h2{ font-size:clamp(30px, 3.6vw, 44px); line-height:1.1; }
+  .on-paper .section-head h2{ color:var(--on-paper); }
+  .section-head p{ margin-top:16px; font-size:17px; color:var(--on-ink-dim); }
+  .on-paper .section-head p{ color:var(--on-paper-dim); }
+
+  /* divider ticks - "every angle" motif */
+  .angle-ticks{ display:flex; gap:5px; margin:0 0 46px; }
+  .angle-ticks span{
+    width:2px; height:16px; background:var(--gold); opacity:0.35;
+    transform-origin:bottom center;
+  }
+  .angle-ticks span:nth-child(1){ transform:rotate(-24deg); }
+  .angle-ticks span:nth-child(2){ transform:rotate(-14deg); }
+  .angle-ticks span:nth-child(3){ transform:rotate(-4deg); opacity:0.55; }
+  .angle-ticks span:nth-child(4){ transform:rotate(6deg); opacity:0.75; }
+  .angle-ticks span:nth-child(5){ transform:rotate(16deg); opacity:0.95; }
+  .angle-ticks span:nth-child(6){ transform:rotate(26deg); background:var(--rust); }
+  .on-ink .angle-ticks span:nth-child(6){ background:var(--gold-bright); }
+
+  /* ---------- how it works ---------- */
+  .steps{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:40px; position:relative;
+  }
+  .steps::before{
+    content:''; position:absolute; top:26px; left:8%; right:8%; height:1px;
+    background:repeating-linear-gradient(90deg, var(--rust) 0 8px, transparent 8px 16px);
+    z-index:0;
+  }
+  .step{ position:relative; z-index:1; }
+  .step .num{
+    width:52px; height:52px; border-radius:50%;
+    background:var(--paper); border:1px solid var(--rust);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:15px; color:var(--rust);
+    margin-bottom:22px;
+  }
+  .step h3{ font-size:21px; margin-bottom:10px; color:var(--on-paper); }
+  .step p{ color:var(--on-paper-dim); font-size:15px; }
+
+  /* ---------- features ---------- */
+  .feature-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+    background:rgba(243,235,216,0.1);
+    border:1px solid rgba(243,235,216,0.1);
+  }
+  .feature-card{
+    background:var(--ink); padding:38px 32px;
+  }
+  .feature-card .icon{ color:var(--gold-bright); margin-bottom:22px; }
+  .feature-card h3{ font-size:19px; margin-bottom:10px; }
+  .feature-card p{ font-size:14.5px; color:var(--on-ink-dim); }
+  .feature-card .tag{
+    font-family:var(--mono); font-size:11px; color:var(--sage); letter-spacing:0.08em;
+    display:block; margin-bottom:14px;
+  }
+
+  /* ---------- formats ---------- */
+  .format-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:34px; }
+  .format-card{
+    border:1px solid rgba(27,42,34,0.16); padding:34px 28px; border-radius:var(--radius);
+    background:var(--paper-dim);
+  }
+  .format-card .icon{ color:var(--rust); margin-bottom:20px; }
+  .format-card h3{ font-size:19px; margin-bottom:10px; color:var(--on-paper); display:flex; align-items:center; gap:10px; }
+  .format-card p{ font-size:14.5px; color:var(--on-paper-dim); }
+  .format-card.is-soon{ opacity:0.6; }
+  .soon-badge{
+    font-family:var(--mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--rust); border:1px solid var(--rust); border-radius:20px; padding:3px 9px;
+  }
+  .format-card .link{
+    display:inline-flex; align-items:center; gap:6px; margin-top:14px;
+    font-family:var(--mono); font-size:12.5px; color:var(--rust);
+  }
+
+  /* ---------- differentiation ---------- */
+  .diff{ display:grid; grid-template-columns:1fr 1fr; gap:70px; align-items:center; }
+  .diff h2{ font-size:clamp(28px,3.4vw,42px); line-height:1.14; margin-bottom:22px; }
+  .diff p{ color:var(--on-ink-dim); font-size:16.5px; margin-bottom:16px; max-width:480px; }
+
+  /* ---------- request form ---------- */
+  .request-card{
+    background:var(--ink-soft); border:1px solid rgba(199,160,90,0.3);
+    border-radius:var(--radius); padding:36px; max-width:420px;
+  }
+  .request-card .req-tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:10px;
+  }
+  .request-card h3{ font-size:20px; margin-bottom:22px; }
+  .request-card .field{ margin-bottom:16px; }
+  .request-card label{
+    display:block; font-family:var(--mono); font-size:11px; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--on-ink-dim); margin-bottom:8px;
+  }
+  .request-card input{
+    width:100%; background:var(--ink); border:1px solid rgba(239,230,210,0.16);
+    border-radius:var(--radius); padding:12px 14px; color:var(--on-ink);
+    font-family:var(--sans); font-size:14px; transition:border-color 0.2s ease;
+  }
+  .request-card input:focus{ outline:none; border-color:var(--gold); }
+  .request-card input::placeholder{ color:rgba(147,167,154,0.5); }
+  .request-card button[type="submit"]{ width:100%; margin-top:6px; }
+  .request-card .req-hint{
+    font-family:var(--mono); font-size:11.5px; color:var(--on-ink-dim);
+    margin-top:16px; line-height:1.5;
+  }
+  .request-card .req-status{
+    font-family:var(--mono); font-size:12px; color:var(--sage); margin-top:14px;
+    min-height:16px;
+  }
+
+  /* ---------- testimonials ---------- */
+  .quote-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:30px; }
+  .quote-card{
+    background:var(--paper); border:1px solid rgba(27,42,34,0.16);
+    border-top:3px dashed var(--rust);
+    padding:32px 28px; position:relative;
+  }
+  .quote-card .card-no{
+    font-family:var(--mono); font-size:11px; color:var(--rust); letter-spacing:0.08em; margin-bottom:18px; display:block;
+  }
+  .quote-card p.q{
+    font-family:var(--serif); font-style:italic; font-size:18px; line-height:1.45; color:var(--on-paper);
+    margin-bottom:22px;
+  }
+  .quote-card .who{ font-family:var(--mono); font-size:12.5px; color:var(--on-paper-dim); }
+  .quote-card .who b{ color:var(--on-paper); font-weight:600; }
+
+  /* ---------- header search ---------- */
+  .header-search{
+    display:flex; align-items:center; gap:10px;
+    background:var(--ink-soft); border:1px solid rgba(239,230,210,0.16);
+    border-radius:var(--radius); padding:10px 14px; width:280px;
+    color:var(--on-ink-dim); transition:border-color 0.2s ease, background 0.2s ease;
+  }
+  .header-search:focus-within{ border-color:var(--gold); background:rgba(199,160,90,0.06); }
+  .header-search svg{ flex-shrink:0; }
+  .header-search input{
+    background:none; border:none; outline:none; color:var(--on-ink);
+    font-family:var(--sans); font-size:14px; width:100%;
+  }
+  .header-search input::placeholder{ color:var(--on-ink-dim); }
+  .search-icon-btn{ flex-shrink:0; display:flex; color:inherit; }
+
+  /* ---------- search overlay ---------- */
+  .search-overlay{
+    position:fixed; inset:0; z-index:200;
+    visibility:hidden; opacity:0;
+    transition:opacity 0.25s ease, visibility 0s linear 0.25s;
+  }
+  .search-overlay.is-open{
+    visibility:visible; opacity:1;
+    transition:opacity 0.25s ease;
+  }
+  .search-overlay-backdrop{
+    position:absolute; inset:0;
+    background:rgba(4,8,7,0.88); backdrop-filter:blur(8px);
+  }
+  .search-overlay-panel{
+    position:relative; height:100%; overflow-y:auto;
+    padding:90px 0 80px;
+  }
+  .overlay-top{ display:flex; align-items:center; gap:16px; }
+  .header-search.big{ flex:1; padding:16px 20px; }
+  .header-search.big input{ font-size:16px; }
+  .overlay-close{
+    width:44px; height:44px; border-radius:50%; flex-shrink:0;
+    border:1px solid rgba(243,235,216,0.2); color:var(--on-ink-dim);
+    display:flex; align-items:center; justify-content:center;
+    transition:border-color 0.2s ease, color 0.2s ease;
+  }
+  .overlay-close:hover{ border-color:var(--gold); color:var(--gold-bright); }
+  .overlay-meta{
+    font-family:var(--mono); font-size:12px; letter-spacing:0.06em;
+    color:var(--on-ink-dim); margin:30px 0 22px;
+  }
+
+  .results-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .result-card{
+    text-align:left; background:var(--ink-soft);
+    border:1px solid rgba(199,160,90,0.16); border-radius:var(--radius);
+    padding:24px; cursor:pointer;
+    transition:border-color 0.2s ease, transform 0.2s ease;
+  }
+  .result-card:hover{ border-color:var(--gold); transform:translateY(-3px); }
+  .result-cover{
+    width:38px; height:54px; border-radius:2px 2px 0 0; margin-bottom:18px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--serif); font-weight:700; font-size:15px; color:rgba(4,8,7,0.55);
+  }
+  .result-cat{
+    font-family:var(--mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--sage); display:block; margin-bottom:10px;
+  }
+  .result-card h4{ font-family:var(--serif); font-size:17px; margin-bottom:4px; color:var(--on-ink); }
+  .result-author{ font-size:13px; color:var(--on-ink-dim); margin-bottom:12px; }
+  .result-hook{ font-size:13.5px; color:var(--on-ink-dim); line-height:1.55; }
+
+  .results-empty{ text-align:center; padding:70px 20px; color:var(--on-ink-dim); }
+  .results-empty p{ margin-bottom:22px; font-size:15px; }
+
+  .back-link{
+    font-family:var(--mono); font-size:12.5px; color:var(--gold);
+    display:inline-flex; align-items:center; gap:6px; margin-bottom:30px;
+  }
+  .back-link:hover{ color:var(--gold-bright); }
+  .detail-head{ display:flex; gap:22px; align-items:flex-start; margin-bottom:36px; }
+  .detail-cover{ width:62px; height:88px; border-radius:3px 3px 0 0; flex-shrink:0; }
+  .detail-category{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--sage); display:block; margin-bottom:8px;
+  }
+  .detail-head h3{ font-size:27px; margin-bottom:6px; }
+  .detail-author{ color:var(--on-ink-dim); font-size:14.5px; }
+
+  .angle-tabs{
+    display:flex; flex-wrap:wrap; gap:8px; margin-bottom:30px;
+    border-bottom:1px solid rgba(243,235,216,0.1); padding-bottom:22px;
+  }
+  .angle-tab{
+    font-family:var(--mono); font-size:12px; letter-spacing:0.03em;
+    padding:9px 16px; border-radius:20px; border:1px solid rgba(243,235,216,0.16);
+    color:var(--on-ink-dim); transition:all 0.2s ease;
+  }
+  .angle-tab:hover{ border-color:var(--gold); color:var(--on-ink); }
+  .angle-tab.is-active{ background:var(--gold); border-color:var(--gold); color:var(--ink-deep); }
+
+  .angle-panel{ max-width:680px; }
+  .angle-panel h4{ font-family:var(--serif); font-size:19px; margin-bottom:14px; }
+  .angle-panel > p{ color:var(--on-ink-dim); font-size:15.5px; line-height:1.65; margin-bottom:14px; }
+  .chapter-item{ margin-bottom:20px; padding-left:18px; border-left:2px solid rgba(199,160,90,0.3); }
+  .chapter-item b{ display:block; color:var(--on-ink); font-family:var(--serif); font-size:15.5px; margin-bottom:4px; }
+  .chapter-item span{ color:var(--on-ink-dim); font-size:14.5px; line-height:1.55; }
+  .quote-list li{
+    font-family:var(--serif); font-style:italic; font-size:16px; color:var(--on-ink);
+    border-left:2px solid var(--rust); padding-left:16px; margin-bottom:16px; line-height:1.5;
+  }
+  .use-list li{
+    display:flex; gap:10px; margin-bottom:12px; font-size:14.5px;
+    color:var(--on-ink-dim); line-height:1.5;
+  }
+  .use-list li::before{ content:'→'; color:var(--gold); flex-shrink:0; }
+
+  body.no-scroll{ overflow:hidden; }
+
+  /* ---------- faq ---------- */
+  .faq-list{ max-width:760px; }
+  .faq-item{
+    border-bottom:1px solid rgba(27,42,34,0.16); padding:6px 0;
+  }
+  .faq-item summary{
+    list-style:none; cursor:pointer; padding:22px 0;
+    display:flex; justify-content:space-between; align-items:center; gap:20px;
+    font-family:var(--serif); font-size:19px; color:var(--on-paper);
+  }
+  .faq-item summary::-webkit-details-marker{ display:none; }
+  .faq-item summary .plus{
+    font-family:var(--mono); color:var(--rust); font-size:20px; flex-shrink:0;
+    transition:transform 0.25s ease;
+  }
+  .faq-item[open] summary .plus{ transform:rotate(45deg); }
+  .faq-item .answer{ padding:0 0 24px; color:var(--on-paper-dim); font-size:15px; max-width:600px; }
+
+  /* ---------- final cta ---------- */
+  .final-cta{
+    background:linear-gradient(135deg, var(--gold) 0%, var(--mustard) 100%);
+    color:var(--ink-deep); text-align:center; padding:110px 0;
+  }
+  .final-cta h2{ font-size:clamp(32px,4.6vw,54px); color:var(--ink-deep); margin-bottom:20px; }
+  .final-cta p{ font-size:17px; color:rgba(4,8,7,0.72); margin-bottom:36px; }
+  .final-cta .btn-dark:hover{ background:var(--ink); }
+  .final-cta .fine{ margin-top:16px; font-family:var(--mono); font-size:12px; color:rgba(4,8,7,0.6); }
+
+  /* ---------- footer ---------- */
+  footer{ background:var(--ink-deep); padding:80px 0 32px; }
+  .colophon-label{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.14em; color:var(--gold); margin-bottom:44px;
+  }
+  .footer-grid{
+    display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; padding-bottom:56px; border-bottom:1px solid rgba(243,235,216,0.1);
+  }
+  .footer-grid .brand p{ color:var(--on-ink-dim); font-size:14px; margin-top:14px; max-width:260px; }
+  .footer-grid h4{ font-family:var(--mono); font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:var(--sage); margin-bottom:18px; }
+  .footer-grid li{ margin-bottom:11px; }
+  .footer-grid a{ font-size:14.5px; color:var(--on-ink-dim); transition:color 0.2s ease; }
+  .footer-grid a:hover{ color:var(--gold-bright); }
+  .footer-bottom{
+    display:flex; justify-content:space-between; align-items:center; padding-top:28px;
+    font-size:13px; color:var(--on-ink-dim); flex-wrap:wrap; gap:12px;
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:980px){
+    .hero .wrap{ grid-template-columns:1fr; }
+    .shelf-frame{ order:-1; }
+    .steps{ grid-template-columns:1fr; gap:36px; }
+    .steps::before{ display:none; }
+    .feature-grid{ grid-template-columns:repeat(2,1fr); }
+    .format-row{ grid-template-columns:1fr; }
+    .diff{ grid-template-columns:1fr; }
+    .quote-row{ grid-template-columns:1fr; }
+    .footer-grid{ grid-template-columns:1fr 1fr; }
+    .results-grid{ grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width:720px){
+    nav.links{ display:none; }
+    .wrap{ padding:0 22px; }
+    section{ padding:80px 0; }
+    .feature-grid{ grid-template-columns:1fr; }
+    .footer-grid{ grid-template-columns:1fr; gap:32px; }
+    .stat-row{ gap:26px; }
+    .header-search{ width:auto; flex:1; margin-left:16px; }
+    .results-grid{ grid-template-columns:1fr; }
+    .detail-head{ flex-direction:column; }
+    .overlay-close{ width:40px; height:40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header class="nav" id="top">
+  <div class="wrap">
+    <div class="logo">Any<span class="dot">Book</span></div>
+    <nav class="links">
+      <a href="#how">How it works</a>
+      <a href="#what">What you get</a>
+      <a href="#request">Request a book</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <form class="header-search" id="headerSearchForm">
+      <button type="submit" class="search-icon-btn" aria-label="Search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <input type="text" id="headerSearchInput" placeholder="Search the library" autocomplete="off">
+    </form>
+  </div>
+</header>
+
+<!-- SEARCH OVERLAY -->
+<div class="search-overlay" id="searchOverlay" aria-hidden="true">
+  <div class="search-overlay-backdrop" id="overlayBackdrop"></div>
+  <div class="search-overlay-panel">
+    <div class="wrap">
+      <div class="overlay-top">
+        <form class="header-search big" id="overlaySearchForm">
+          <button type="submit" class="search-icon-btn" aria-label="Search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+          <input type="text" id="overlaySearchInput" placeholder="Search the library" autocomplete="off">
+        </form>
+        <button class="overlay-close" id="overlayClose" type="button" aria-label="Close search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="overlay-meta" id="overlayMeta"></div>
+
+      <div class="results-grid" id="resultsGrid"></div>
+
+      <div class="results-empty" id="resultsEmpty" hidden>
+        <p>No match in the library yet.</p>
+        <a href="#request" class="btn btn-gold" id="emptyRequestLink">Request this title</a>
+      </div>
+
+      <div class="book-detail" id="bookDetail" hidden>
+        <button class="back-link" id="backToResults" type="button">&larr; All results</button>
+        <div class="detail-head">
+          <div class="detail-cover" id="detailCover"></div>
+          <div>
+            <span class="detail-category" id="detailCategory"></span>
+            <h3 id="detailTitle"></h3>
+            <p class="detail-author" id="detailAuthor"></p>
+          </div>
+        </div>
+        <div class="angle-tabs" id="angleTabs"></div>
+        <div class="angle-panel" id="anglePanel"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">A library of summaries, written by us</div>
+        <h1>Any book.<br>Every <em>angle</em>.<br>Ten minutes.</h1>
+        <p class="lede">Search the library for the core argument, the full chapter map, the quotes worth keeping, and the points critics push back on. Every summary is read and written by us, not generated on the spot. Can't find your title? Ask us to add it.</p>
+        <div class="hero-actions">
+          <a href="#" class="btn btn-gold" onclick="openSearchOverlay(''); return false;">Search a book</a>
+          <a href="#formats" class="btn btn-outline">Request a title</a>
+        </div>
+        <div class="search-mock" id="searchMock" role="button" tabindex="0" aria-label="Search this title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span class="type-field" id="typeField"></span>
+        </div>
+        <div class="stat-row">
+          <div class="stat"><b>Free</b><span>no account needed</span></div>
+          <div class="stat"><b>9 min</b><span>average read</span></div>
+          <div class="stat"><b>6</b><span>angles per summary</span></div>
+        </div>
+      </div>
+
+      <div class="shelf-frame">
+        <div class="shelf" id="shelf"></div>
+        <div class="shelf-caption"><span>SHELF 01 / ANY TITLE</span><span>ANY ISBN, ANY EDITION</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="on-paper" id="how">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">How it works</div>
+        <h2>Search the library, or ask us to grow it.</h2>
+        <p>No app to install. No account to make. No bot writing your summary.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal d1">
+          <div class="num">01</div>
+          <h3>Search</h3>
+          <p>Type any title. If it's already in the library, you'll find it right away.</p>
+        </div>
+        <div class="step reveal d2">
+          <div class="num">02</div>
+          <h3>Not there? Request it</h3>
+          <p>Send us the title. We read the book ourselves, cover to cover, before writing a single word.</p>
+        </div>
+        <div class="step reveal d3">
+          <div class="num">03</div>
+          <h3>Get every angle</h3>
+          <p>Read one summary covering the argument, the chapter map, the quotes, the uses, and the pushback.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="what">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">What you get</div>
+        <h2>One summary. Six angles.</h2>
+        <p>Every AnyBook summary covers the same six angles, book after book.</p>
+      </div>
+      <div class="angle-ticks reveal"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+      <div class="feature-grid">
+        <div class="feature-card reveal d1">
+          <div class="icon"><svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="20" cy="20" r="15"/><circle cx="20" cy="20" r="9"/><circle cx="20" cy="20" r="2.4" fill="currentColor" stroke="none"/></svg></div>
+          <span class="tag">01</span>
+          <h3>Core argument</h3>
+          <p>The main point of the book, in plain terms.</p>
+        </div>
+        <div class="feature-card reveal d2">
+          <div class="icon"><svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="12" x2="32" y2="12"/><line x1="8" y1="20" x2="26" y2="20"/><line x1="8" y1="28" x2="29" y2="28"/></svg></div>
+          <span class="tag">02</span>
+          <h3>Chapter map</h3>
+          <p>A full walk-through of each chapter's ideas, in the order the author built them, not just a one-line note.</p>
+        </div>
+        <div class="feature-card reveal d3">
+          <div class="icon"><svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 14c0-3 2-5 5-5v4c-1.5 0-2 1-2 2v2h2v6h-6v-9Z"/><path d="M23 14c0-3 2-5 5-5v4c-1.5 0-2 1-2 2v2h2v6h-6v-9Z"/></svg></div>
+          <span class="tag">03</span>
+          <h3>Notable quotes</h3>
+          <p>Lines worth remembering, straight from the text.</p>
+        </div>
+        <div class="feature-card reveal d4">
+          <div class="icon"><svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 21l7 7L33 12"/></svg></div>
+          <span class="tag">04</span>
+          <h3>Real world use</h3>
+          <p>Practical steps from the book's ideas.</p>
+        </div>
+        <div class="feature-card reveal d5">
+          <div class="icon"><svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="9" y1="20" x2="20" y2="20"/><polyline points="14,15 9,20 14,25"/><line x1="20" y1="20" x2="31" y2="20"/><polyline points="26,15 31,20 26,25"/></svg></div>
+          <span class="tag">05</span>
+          <h3>Pushback</h3>
+          <p>Where critics and reviewers disagree with the author.</p>
+        </div>
+        <div class="feature-card reveal d6">
+          <div class="icon"><svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 28L26 14a2.8 2.8 0 0 1 4 4L16 32l-6 2 2-6Z"/></svg></div>
+          <span class="tag">06</span>
+          <h3>Author background</h3>
+          <p>Who wrote the book, and the reason behind it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORMATS -->
+  <section class="on-paper" id="formats">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Read it, or request one</div>
+        <h2>Read what's here. Ask for what's missing.</h2>
+      </div>
+      <div class="format-row">
+        <div class="format-card reveal d1">
+          <div class="icon"><svg width="30" height="30" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="7" width="22" height="26" rx="2"/><line x1="14" y1="14" x2="26" y2="14"/><line x1="14" y1="20" x2="26" y2="20"/><line x1="14" y1="26" x2="21" y2="26"/></svg></div>
+          <h3>Text</h3>
+          <p>8 to 12 minutes, with headers for each angle.</p>
+        </div>
+        <div class="format-card is-soon reveal d2">
+          <div class="icon"><svg width="30" height="30" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 24V16a7 7 0 0 1 14 0v8"/><rect x="9" y="22" width="6" height="9" rx="2"/><rect x="25" y="22" width="6" height="9" rx="2"/></svg></div>
+          <h3>Audio <span class="soon-badge">Coming soon</span></h3>
+          <p>Narrated versions are on the way, for listening on a commute, a walk, or a workout. Not live yet.</p>
+        </div>
+        <div class="format-card reveal d3">
+          <div class="icon"><svg width="30" height="30" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 9v22M9 20h22"/></svg></div>
+          <h3>Request a title</h3>
+          <p>Don't see a book yet? Send us the title and we'll read it and add a summary ourselves.</p>
+          <a href="#request" class="link">Send us a title →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIFFERENTIATION / REQUEST -->
+  <section id="request">
+    <div class="wrap diff">
+      <div class="reveal">
+        <div class="eyebrow">Written by readers, not generated by AI</div>
+        <h2>A library that grows one request at a time.</h2>
+        <p>Most summary apps run your book through an algorithm and hand back whatever comes out. AnyBook doesn't. Every summary is read and written by us, chapter by chapter, before it goes on the shelf.</p>
+        <p>Search the library. If your title isn't there yet, send it our way and we'll add it.</p>
+      </div>
+      <div class="reveal d2">
+        <form class="request-card" id="requestForm" novalidate>
+          <div class="req-tag">Request a title</div>
+          <h3>Don't see your book?</h3>
+          <div class="field">
+            <label for="reqTitle">Book title</label>
+            <input type="text" id="reqTitle" name="reqTitle" placeholder="e.g. The Odyssey" required autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="reqAuthor">Author <span style="opacity:0.6">(optional)</span></label>
+            <input type="text" id="reqAuthor" name="reqAuthor" placeholder="e.g. Homer" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="reqEmail">Your email <span style="opacity:0.6">(optional, so we can tell you when it's up)</span></label>
+            <input type="email" id="reqEmail" name="reqEmail" placeholder="you@example.com" autocomplete="off">
+          </div>
+          <button type="submit" class="btn btn-gold">Send request</button>
+          <div class="req-status" id="reqStatus" aria-live="polite"></div>
+          <div class="req-hint">This opens your email app with the details filled in, addressed to us. No account, no bot in between.</div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="on-paper">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Readers</div>
+        <h2>What readers say.</h2>
+      </div>
+      <div class="quote-row">
+        <div class="quote-card reveal d1">
+          <span class="card-no">CARD NO. 01</span>
+          <p class="q">"I read the summary before book club and still had something to say."</p>
+          <div class="who"><b>Maria T.</b>, book club host</div>
+        </div>
+        <div class="quote-card reveal d2">
+          <span class="card-no">CARD NO. 02</span>
+          <p class="q">"I search for the book I need, not the book on someone else's list."</p>
+          <div class="who"><b>Daniel K.</b>, product manager</div>
+        </div>
+        <div class="quote-card reveal d3">
+          <span class="card-no">CARD NO. 03</span>
+          <p class="q">"The pushback section saved me from citing an argument critics already disproved."</p>
+          <div class="who"><b>Priya S.</b>, graduate student</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="on-paper" id="faq">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">FAQ</div>
+        <h2>Questions, answered.</h2>
+      </div>
+      <div class="faq-list reveal">
+        <details class="faq-item" open>
+          <summary>Do I need an account?<span class="plus">+</span></summary>
+          <div class="answer">No. Search a title and read. AnyBook stays free, with no sign up and no card.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Does AnyBook cover fiction and nonfiction?<span class="plus">+</span></summary>
+          <div class="answer">Yes. Search any title in either category.</div>
+        </details>
+        <details class="faq-item">
+          <summary>What if my book isn't in the library yet?<span class="plus">+</span></summary>
+          <div class="answer">Use the "Request a title" link and send us the title. We read the book ourselves and add the summary — we don't generate it automatically, so it isn't instant, but we work through requests as they come in.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Is the summary biased toward the author's argument?<span class="plus">+</span></summary>
+          <div class="answer">No. Each summary includes pushback from critics, not the author's view alone.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Do you offer audio?<span class="plus">+</span></summary>
+          <div class="answer">Not yet. Audio narration is on the way, but every summary is text-only for now.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Do you support languages other than English?<span class="plus">+</span></summary>
+          <div class="answer">English today. Additional languages come later this year.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final-cta">
+    <div class="wrap">
+      <h2 class="reveal">Pick a book.<br>Read every angle.</h2>
+      <p class="reveal d1">Search a title. Read in minutes.</p>
+      <a href="#" class="btn btn-dark reveal d2" onclick="openSearchOverlay(''); return false;">Search a book</a>
+      <div class="fine">Free. No account. No card.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="colophon-label">COLOPHON</div>
+    <div class="footer-grid">
+      <div class="brand">
+        <div class="logo">Any<span class="dot">Book</span></div>
+        <p>AnyBook reads the whole book. You get every angle.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#what">What you get</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Privacy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 AnyBook. All rights reserved.</span>
+      <span>For readers who search first.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // reveal on scroll
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); }
+    });
+  }, { threshold:0.15 });
+  revealEls.forEach(el=>io.observe(el));
+
+  // nav shadow on scroll
+  const navEl = document.querySelector('header.nav');
+  window.addEventListener('scroll', ()=>{
+    if(window.scrollY > 8){ navEl.style.borderBottomColor = 'rgba(199,160,90,0.35)'; }
+    else{ navEl.style.borderBottomColor = 'rgba(199,160,90,0.16)'; }
+  });
+
+  // bookshelf spines
+  const shelf = document.getElementById('shelf');
+  const palette = ['#C7A05A','#B4543A','#83A78E','#5E7F91','#CBA35F','#E7DBBE'];
+  const heights = [180,210,150,230,170,200,160,220,190,150,205,175];
+  const shelfFrag = document.createDocumentFragment();
+  heights.forEach((h,i)=>{
+    const s = document.createElement('div');
+    s.className = 'spine';
+    s.style.height = h+'px';
+    s.style.background = palette[i % palette.length];
+    s.style.animationDelay = (i*0.05)+'s';
+    shelfFrag.appendChild(s);
+  });
+  shelf.appendChild(shelfFrag);
+
+  // typewriter search mock
+  const titles = ['Atomic Habits', 'Sapiens', 'Meditations', 'Educated', 'The Odyssey'];
+  const field = document.getElementById('typeField');
+
+  if(reduceMotion){
+    field.textContent = titles[0];
+  } else {
+    let ti = 0, ci = 0, deleting = false;
+
+    function tick(){
+      const word = titles[ti];
+      if(!deleting){
+        ci++;
+        field.textContent = word.slice(0, ci);
+        if(ci === word.length){ deleting = true; setTimeout(tick, 1400); return; }
+      } else {
+        ci--;
+        field.textContent = word.slice(0, ci);
+        if(ci === 0){ deleting = false; ti = (ti+1) % titles.length; setTimeout(tick, 300); return; }
+      }
+      setTimeout(tick, deleting ? 35 : 70);
+    }
+    tick();
+  }
+
+  const headerSearchInput = document.getElementById('headerSearchInput');
+
+  // ---------- search overlay ----------
+  // SAMPLE DATA — replace with your own written summaries before this goes live.
+  const BOOKS = [
+    {
+      id:'atomic-habits', title:'Atomic Habits', author:'James Clear', category:'Nonfiction · Self-improvement',
+      hook:"Small, repeated actions compound into identity change over time.", cover:'#C7A05A',
+      angles:{
+        argument:"Clear argues that lasting change comes from systems, not goals: tiny improvements, repeated consistently, compound into significant results, and habits stick best when they reinforce the identity you want to hold.",
+        chapters:[
+          {t:'The 1% rule', d:'Opens by reframing progress as compounding small habits rather than dramatic leaps.'},
+          {t:'The four laws', d:'Lays out a framework for building habits that stick, built around making them obvious, attractive, easy, and satisfying.'},
+          {t:'Identity over outcome', d:'Argues that habits rooted in who you want to become outlast habits chased for results alone.'},
+          {t:'Environment design', d:'Shows how shaping your surroundings removes the need for constant willpower.'},
+          {t:'Breaking bad habits', d:'Flips the four laws to explain how to make unwanted habits invisible, unattractive, and difficult.'}
+        ],
+        quotes:[
+          "Progress rarely feels dramatic in the moment — it shows up later, all at once, as the sum of habits repeated long before anyone noticed.",
+          "The habits that last are the ones that feel like evidence of who you're becoming, not chores you're pushing through.",
+          "A system built around your environment does more work than motivation ever will."
+        ],
+        uses:["Design a habit tracker around one small, obvious cue.","Rearrange your space so the good habit is the easy one.","Tie new habits to the identity you want, not just the outcome."],
+        pushback:"Critics note the framework works best for simple, mechanical habits and offers less for complex behavior change tied to trauma, addiction, or deep-rooted circumstance.",
+        authorBg:"Clear built the ideas through years of writing about habit formation online before compiling them into the book, drawing partly on his own recovery from a serious injury."
+      }
+    },
+    {
+      id:'sapiens', title:'Sapiens', author:'Yuval Noah Harari', category:'Nonfiction · History',
+      hook:"A sweep through human history built around three revolutions.", cover:'#B4543A',
+      angles:{
+        argument:"Harari traces how Homo sapiens came to dominate the planet through an ability to cooperate at scale around shared fictions — money, nations, religions — that no other species can construct.",
+        chapters:[
+          {t:'The Cognitive Revolution', d:'Explains how the capacity for shared myths let strangers cooperate in numbers no other species could manage.'},
+          {t:'The Agricultural Revolution', d:'Reframes farming as a trap dressed as progress, trading a harder, more repetitive life for more food per acre.'},
+          {t:'Unification of humankind', d:'Follows how money, empires, and religions grew into forces that connected once-isolated peoples.'},
+          {t:'The Scientific Revolution', d:'Looks at how admitting ignorance, paired with capital, accelerated discovery and conquest.'},
+          {t:'The future of the species', d:'Closes by asking what happens once biotechnology lets us start redesigning ourselves.'}
+        ],
+        quotes:[
+          "Large-scale cooperation among strangers is only possible because we agree to believe in stories no one can touch.",
+          "Farming didn't just feed more people — it also tied them down to longer hours and harder work.",
+          "Money may be the most universal and efficient system of mutual trust ever devised."
+        ],
+        uses:["Apply healthy skepticism to institutions built on shared stories.","Reframe modern crises against a longer historical arc.","Use the myth-cooperation lens to analyze organizations you belong to."],
+        pushback:"Historians have pushed back on the book's sweeping generalizations and its thin coverage of non-Western history, arguing it sometimes simplifies contested evidence for narrative effect.",
+        authorBg:"Harari is a historian at the Hebrew University of Jerusalem; the book grew out of a world-history course he taught before it became a global bestseller."
+      }
+    },
+    {
+      id:'meditations', title:'Meditations', author:'Marcus Aurelius', category:'Nonfiction · Philosophy',
+      hook:"Private journal entries from a Roman emperor practicing Stoic discipline.", cover:'#83A78E',
+      angles:{
+        argument:"Written as personal notes rather than a public treatise, the text works through Stoic ideas — control what's within your power, accept what isn't, and treat each day as practice for facing difficulty calmly.",
+        chapters:[
+          {t:'Book 1: debts and lessons', d:'Opens with a list of gratitude toward the people who shaped his character.'},
+          {t:'The discipline of judgment', d:'Works through separating events from the opinions we layer on top of them.'},
+          {t:'The discipline of action', d:'Focuses on acting for the common good regardless of how others behave.'},
+          {t:'The discipline of will', d:'Practices accepting what can\u2019t be controlled without resentment.'},
+          {t:'Facing mortality', d:'Returns repeatedly to death as a way of clarifying what matters now.'}
+        ],
+        quotes:[
+          "What stands in the way becomes the way, once you stop resisting it.",
+          "You hold power over your reactions, even when you hold none over the events themselves.",
+          "A short life is enough, if it's lived with reason and steady character."
+        ],
+        uses:["Start a short daily journaling habit built around reflection.","Separate what's in your control from what isn't before reacting.","Revisit mortality as a way to reset daily priorities."],
+        pushback:"Some scholars argue the text is less a systematic philosophy than scattered private reminders, and its comfort with hierarchy sits oddly with modern readers.",
+        authorBg:"Marcus Aurelius ruled the Roman Empire from 161 to 180 CE; he wrote privately in Greek, most likely never intending the notes for publication."
+      }
+    },
+    {
+      id:'educated', title:'Educated', author:'Tara Westover', category:'Memoir',
+      hook:"A memoir of growing up off the grid and finding a path to Cambridge.", cover:'#5E7F91',
+      angles:{
+        argument:"Westover recounts a childhood without formal schooling, shaped by a survivalist family, and the slow, often painful process of educating herself into a different life — and a different relationship with her family.",
+        chapters:[
+          {t:'Childhood in the mountains', d:'Sets up a household built around self-reliance and deep suspicion of institutions.'},
+          {t:'First taste of a classroom', d:'Follows her first attempts at formal study, largely self-taught from borrowed textbooks.'},
+          {t:'College and culture shock', d:'Covers the disorientation of encountering basic facts and social norms for the first time.'},
+          {t:'Family rupture', d:'Traces the growing distance between her and family members as her worldview shifts.'},
+          {t:'Graduate life and reckoning', d:'Closes with her doctoral work and an uneasy peace with what she left behind.'}
+        ],
+        quotes:[
+          "Education, for her, becomes less about facts and more about learning to trust her own perception of events.",
+          "Every new idea she encountered had to be weighed against what she'd been taught to fear.",
+          "Distance from home turns out to be the only way she can finally see it clearly."
+        ],
+        uses:["Reflect on which formative beliefs still shape your decisions.","Examine family narratives you've never questioned.","Use as a case study on self-directed education."],
+        pushback:"Some family members have publicly disputed portions of the account, and reviewers note that memoir inherently reflects one person's memory rather than a verified record.",
+        authorBg:"Westover earned a PhD in history from Cambridge after her unconventional path into formal education; the memoir was published in 2018."
+      }
+    },
+    {
+      id:'the-odyssey', title:'The Odyssey', author:'Homer', category:'Fiction · Epic poem',
+      hook:"Odysseus's decade-long journey home, tested by monsters, gods, and pride.", cover:'#CBA35F',
+      angles:{
+        argument:"The epic follows Odysseus's struggle to return to Ithaca and reclaim his household, framing endurance, cunning, and hospitality as the qualities that separate a hero from a fool.",
+        chapters:[
+          {t:'The suitors at home', d:'Sets up the crisis waiting for Odysseus back in Ithaca while he is still away.'},
+          {t:'Among the Cyclops', d:'Shows cunning winning out over brute strength in the encounter with Polyphemus.'},
+          {t:'The underworld and the sirens', d:'Tests his resolve against temptation and the pull of the past.'},
+          {t:"Circe's island", d:'Slows the journey down with transformation, both literal and personal.'},
+          {t:'The return and the bow', d:'Builds to the final test that only the true king of Ithaca can pass.'}
+        ],
+        quotes:[
+          "Cleverness gets him out of dangers that strength alone never could.",
+          "Hospitality, or its absence, becomes the moral test running through every stop on the journey.",
+          "Coming home turns out to require as much patience as the entire voyage."
+        ],
+        uses:['Framework for discussing the hero\'s-journey story structure.','Compare ancient hospitality customs to modern equivalents.','Use for comparative mythology discussion.'],
+        pushback:"Scholars still debate whether the poem was composed by a single author, an oral tradition, or several hands, which complicates any single reading of its themes.",
+        authorBg:"Attributed to Homer, a figure whose historical existence is itself debated; the poem descends from a long oral storytelling tradition in ancient Greece."
+      }
+    },
+    {
+      id:'deep-work', title:'Deep Work', author:'Cal Newport', category:'Nonfiction · Productivity',
+      hook:"A case for scheduled, distraction-free focus as a scarce modern skill.", cover:'#E7DBBE',
+      angles:{
+        argument:"Newport argues that the ability to concentrate without distraction is increasingly rare and valuable, and that structured routines — not willpower alone — are what protect it.",
+        chapters:[
+          {t:'The value of deep work', d:'Makes the case that focused output is what separates work that compounds from work that does not.'},
+          {t:"Why it's rare", d:'Looks at how open offices and constant messaging erode the conditions focus needs.'},
+          {t:'Four scheduling philosophies', d:'Lays out different ways to carve out protected time depending on your job.'},
+          {t:'Embracing boredom', d:'Argues that training your tolerance for boredom is what makes deep focus possible on demand.'},
+          {t:'Draining the shallows', d:'Closes with tactics for shrinking the low-value busywork that crowds out focus.'}
+        ],
+        quotes:[
+          "Attention, once fragmented by constant notifications, takes real time to rebuild.",
+          "Depth of focus, not hours logged, is what produces work that's hard to replicate.",
+          "Boredom tolerance turns out to be a trainable skill, not a fixed trait."
+        ],
+        uses:["Block dedicated focus time on your calendar.","Set a shutdown ritual to close out the workday.","Reduce app notifications during scheduled focus blocks."],
+        pushback:"Critics note the advice assumes a degree of job flexibility not everyone has, and argue the book underplays the collaborative, interruption-heavy nature of many real jobs.",
+        authorBg:"Newport is a computer science professor at Georgetown who writes about technology and productivity alongside his academic research."
+      }
+    },
+    {
+      id:'thinking-fast-and-slow', title:'Thinking, Fast and Slow', author:'Daniel Kahneman', category:'Nonfiction · Psychology',
+      hook:"A Nobel laureate's map of the two systems behind human judgment.", cover:'#C7A05A',
+      angles:{
+        argument:"Kahneman lays out decades of research showing how quick, automatic thinking and slower, effortful reasoning interact — and how predictably that interaction produces biased judgments.",
+        chapters:[
+          {t:'System 1 and System 2', d:'Introduces the fast, intuitive mode and the slow, deliberate mode that trade off in every decision.'},
+          {t:'Heuristics and biases', d:'Catalogs the mental shortcuts that work well most of the time and fail predictably.'},
+          {t:'Overconfidence', d:'Shows how confident a judgment feels has little to do with how accurate it is.'},
+          {t:'Loss aversion', d:'Explains why losses are felt more sharply than equivalent gains.'},
+          {t:'Two selves', d:'Distinguishes the experiencing self from the remembering self, and how differently they rate the same event.'}
+        ],
+        quotes:[
+          "Confidence in a judgment often has more to do with the coherence of the story than the quality of the evidence.",
+          "Losses tend to be felt roughly twice as strongly as equivalent gains.",
+          "The remembering self and the experiencing self can rate the same event in completely different ways."
+        ],
+        uses:["Slow down before high-stakes decisions to engage deliberate thinking.","Design choice architecture aware of loss aversion.","Watch for overconfidence in judgments that feel obviously right."],
+        pushback:"Some of the underlying studies have faced replication challenges since publication, which Kahneman himself has publicly acknowledged for a handful of findings.",
+        authorBg:"Kahneman, a psychologist, won the Nobel Memorial Prize in Economic Sciences in 2002 for work bridging psychology and economics."
+      }
+    },
+    {
+      id:'1984', title:'1984', author:'George Orwell', category:'Fiction · Dystopian',
+      hook:"A totalitarian state that controls thought itself, seen through one clerk's rebellion.", cover:'#B4543A',
+      angles:{
+        argument:"Orwell imagines a regime that survives by rewriting history and language itself, following Winston Smith's doomed attempt to think — and love — outside the Party's control.",
+        chapters:[
+          {t:"Winston's forbidden diary", d:'Opens with the small, dangerous act of writing down a private thought.'},
+          {t:'Newspeak and doublethink', d:'Explores how narrowing language narrows what a person can even think.'},
+          {t:'The affair with Julia', d:'Follows a private rebellion that briefly makes another kind of life feel possible.'},
+          {t:'Capture by the Thought Police', d:'Turns from rebellion to interrogation once the Party closes in.'},
+          {t:'Room 101', d:'Ends with the final psychological break the Party demands before it accepts surrender.'}
+        ],
+        quotes:[
+          "Whoever controls the record of the past controls the story of the present.",
+          "A language stripped of certain words makes certain thoughts impossible to have at all.",
+          "Total power isn't satisfied until it controls what a person believes, not just what they do."
+        ],
+        uses:["Framework for discussing surveillance and propaganda.","Case study for media literacy classes.","Compare its warnings to current data and monitoring practices."],
+        pushback:"Some critics argue the book's bleakness borders on didactic, sacrificing character depth for political allegory; others debate how directly its warnings map onto modern technology.",
+        authorBg:"Orwell wrote the novel in the late 1940s, drawing on his experience with wartime propaganda and his opposition to totalitarian regimes of both the left and right."
+      }
+    },
+    {
+      id:'mans-search-for-meaning', title:"Man's Search for Meaning", author:'Viktor Frankl', category:'Nonfiction · Memoir',
+      hook:"A psychiatrist's account of surviving the camps, and the theory of meaning he built from it.", cover:'#83A78E',
+      angles:{
+        argument:"Frankl argues that even in extreme suffering, people retain the freedom to choose their attitude, and that a sense of purpose — not pleasure or power — is what makes survival, and a good life, possible.",
+        chapters:[
+          {t:'Arrival and loss of identity', d:'Describes the stripping away of name, possessions, and status on arrival at the camp.'},
+          {t:'Daily survival', d:'Details the psychological adjustments needed just to get through each day.'},
+          {t:'The psychology of apathy', d:'Examines the numbness that sets in as a protective response to constant loss.'},
+          {t:'Liberation', d:'Covers the disorienting return to freedom after years of total control.'},
+          {t:'Introducing logotherapy', d:'Closes by outlining the theory of meaning he developed from the experience.'}
+        ],
+        quotes:[
+          "Everything can be taken from a person except the choice of how to respond to what happens.",
+          "Those who found some future purpose to live for were more likely to endure.",
+          "Meaning, in his view, can be found through work, through love, or through how one faces unavoidable suffering."
+        ],
+        uses:["Reframe hardship around a sense of purpose rather than pleasure.","Set purpose-driven goals during difficult periods.","Foundational reading before exploring logotherapy further."],
+        pushback:"Some scholars note that survival in the camps depended heavily on luck and circumstance, and caution against reading the book as a formula where attitude alone determines outcomes.",
+        authorBg:"Frankl was a Viennese psychiatrist before his imprisonment; after the war he developed logotherapy, a form of existential analysis centered on meaning."
+      }
+    },
+    {
+      id:'the-lean-startup', title:'The Lean Startup', author:'Eric Ries', category:'Nonfiction · Business',
+      hook:"A build-measure-learn framework for testing ideas before betting everything.", cover:'#5E7F91',
+      angles:{
+        argument:"Ries argues that startups succeed by treating a business plan as a set of untested hypotheses, then running fast, cheap experiments to validate or kill ideas before scaling them.",
+        chapters:[
+          {t:'The lean startup method', d:'Frames a startup as an experiment, not a scaled-down version of an established company.'},
+          {t:'The minimum viable product', d:'Explains how to build the smallest version that tests the riskiest assumption.'},
+          {t:'Build-measure-learn', d:'Lays out the core feedback loop for iterating quickly on real data.'},
+          {t:'Innovation accounting', d:'Introduces metrics built for judging progress before revenue exists.'},
+          {t:'Pivot or persevere', d:'Covers the decision point every founder eventually has to face directly.'}
+        ],
+        quotes:[
+          "A product's first version only needs to be good enough to test the riskiest assumption behind it.",
+          "Vanity metrics can make a failing product look healthy right up until it isn't.",
+          "The hardest strategic decision is often not what to build, but whether to pivot."
+        ],
+        uses:["Design a minimum viable product around one risky assumption.","Set up a build-measure-learn cycle for a new feature.","Choose actionable metrics over vanity metrics."],
+        pushback:"Critics argue the framework works better for software products than capital-intensive or highly regulated industries, and that 'fail fast' advice can be misapplied to justify sloppy execution.",
+        authorBg:"Ries developed the lean startup methodology from his own experience founding and iterating on software startups in Silicon Valley."
+      }
+    }
+  ];
+
+  const ANGLE_DEFS = [
+    {key:'argument', label:'Core argument'},
+    {key:'chapters', label:'Chapter map'},
+    {key:'quotes', label:'Notable lines'},
+    {key:'uses', label:'Real world use'},
+    {key:'pushback', label:'Pushback'},
+    {key:'authorBg', label:'Author background'}
+  ];
+
+  const searchOverlay = document.getElementById('searchOverlay');
+  const overlaySearchInput = document.getElementById('overlaySearchInput');
+  const overlaySearchForm = document.getElementById('overlaySearchForm');
+  const overlayMeta = document.getElementById('overlayMeta');
+  const resultsGrid = document.getElementById('resultsGrid');
+  const resultsEmpty = document.getElementById('resultsEmpty');
+  const bookDetail = document.getElementById('bookDetail');
+  const emptyRequestLink = document.getElementById('emptyRequestLink');
+
+  function openSearchOverlay(query){
+    searchOverlay.classList.add('is-open');
+    searchOverlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('no-scroll');
+    bookDetail.hidden = true;
+    overlaySearchInput.value = query || '';
+    renderResults(overlaySearchInput.value);
+    setTimeout(()=> overlaySearchInput.focus(), reduceMotion ? 0 : 200);
+  }
+
+  function closeSearchOverlay(){
+    searchOverlay.classList.remove('is-open');
+    searchOverlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('no-scroll');
+  }
+
+  function renderResults(query){
+    const q = (query || '').trim().toLowerCase();
+    const matches = q
+      ? BOOKS.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q))
+      : BOOKS;
+
+    resultsGrid.hidden = false;
+    resultsGrid.innerHTML = '';
+
+    if(matches.length === 0){
+      resultsEmpty.hidden = false;
+      overlayMeta.textContent = `No results for "${query}"`;
+      emptyRequestLink.href = '#request';
+      return;
+    }
+
+    resultsEmpty.hidden = true;
+    overlayMeta.textContent = q
+      ? `${matches.length} result${matches.length === 1 ? '' : 's'} for "${query}"`
+      : `${matches.length} books in the library`;
+
+    matches.forEach(book=>{
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'result-card';
+      card.innerHTML = `
+        <div class="result-cover" style="background:${book.cover}">${book.title.charAt(0)}</div>
+        <span class="result-cat">${book.category}</span>
+        <h4>${book.title}</h4>
+        <div class="result-author">${book.author}</div>
+        <div class="result-hook">${book.hook}</div>
+      `;
+      card.addEventListener('click', ()=> openBookDetail(book.id));
+      resultsGrid.appendChild(card);
+    });
+  }
+
+  function openBookDetail(id){
+    const book = BOOKS.find(b => b.id === id);
+    if(!book) return;
+
+    resultsGrid.hidden = true;
+    resultsEmpty.hidden = true;
+    overlayMeta.textContent = '';
+    bookDetail.hidden = false;
+
+    document.getElementById('detailCover').style.background = book.cover;
+    document.getElementById('detailCategory').textContent = book.category;
+    document.getElementById('detailTitle').textContent = book.title;
+    document.getElementById('detailAuthor').textContent = book.author;
+
+    const tabsEl = document.getElementById('angleTabs');
+    tabsEl.innerHTML = '';
+    ANGLE_DEFS.forEach((def, i)=>{
+      const tab = document.createElement('button');
+      tab.type = 'button';
+      tab.className = 'angle-tab' + (i === 0 ? ' is-active' : '');
+      tab.textContent = def.label;
+      tab.addEventListener('click', ()=>{
+        tabsEl.querySelectorAll('.angle-tab').forEach(t=>t.classList.remove('is-active'));
+        tab.classList.add('is-active');
+        renderAnglePanel(book, def.key);
+      });
+      tabsEl.appendChild(tab);
+    });
+
+    renderAnglePanel(book, ANGLE_DEFS[0].key);
+    document.querySelector('.search-overlay-panel').scrollTop = 0;
+  }
+
+  function renderAnglePanel(book, key){
+    const panel = document.getElementById('anglePanel');
+    const data = book.angles[key];
+
+    if(key === 'chapters'){
+      panel.innerHTML = data.map(ch => `<div class="chapter-item"><b>${ch.t}</b><span>${ch.d}</span></div>`).join('');
+    } else if(key === 'quotes'){
+      panel.innerHTML = `<ul class="quote-list">${data.map(q => `<li>${q}</li>`).join('')}</ul>`;
+    } else if(key === 'uses'){
+      panel.innerHTML = `<ul class="use-list">${data.map(u => `<li>${u}</li>`).join('')}</ul>`;
+    } else {
+      panel.innerHTML = `<p>${data}</p>`;
+    }
+  }
+
+  // wire up all the entry points into the overlay
+  document.getElementById('headerSearchForm').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    openSearchOverlay(headerSearchInput.value);
+  });
+
+  overlaySearchForm.addEventListener('submit', (e)=> e.preventDefault());
+  overlaySearchInput.addEventListener('input', ()=> renderResults(overlaySearchInput.value));
+
+  document.getElementById('overlayClose').addEventListener('click', closeSearchOverlay);
+  document.getElementById('overlayBackdrop').addEventListener('click', closeSearchOverlay);
+  document.getElementById('backToResults').addEventListener('click', ()=>{
+    bookDetail.hidden = true;
+    renderResults(overlaySearchInput.value);
+  });
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && searchOverlay.classList.contains('is-open')) closeSearchOverlay();
+  });
+
+  const searchMock = document.getElementById('searchMock');
+  searchMock.addEventListener('click', ()=> openSearchOverlay(field.textContent));
+  searchMock.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openSearchOverlay(field.textContent); }
+  });
+
+  // request a title: build a mailto with the details filled in
+  // TODO: replace with the inbox you want requests to land in
+  const REQUEST_EMAIL = 'hello@anybook.co';
+
+  const requestForm = document.getElementById('requestForm');
+  const reqStatus = document.getElementById('reqStatus');
+
+  requestForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const title = document.getElementById('reqTitle').value.trim();
+    const author = document.getElementById('reqAuthor').value.trim();
+    const email = document.getElementById('reqEmail').value.trim();
+
+    if(!title){
+      reqStatus.textContent = 'Add a book title first.';
+      reqStatus.style.color = 'var(--rust)';
+      document.getElementById('reqTitle').focus();
+      return;
+    }
+
+    const subject = `Book request: ${title}`;
+    let body = `Book title: ${title}\n`;
+    if(author) body += `Author: ${author}\n`;
+    if(email) body += `Notify me at: ${email}\n`;
+    body += `\nSent from the AnyBook request form.`;
+
+    const mailtoLink = `mailto:${REQUEST_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    reqStatus.textContent = 'Opening your email app…';
+    reqStatus.style.color = 'var(--sage)';
+    window.location.href = mailtoLink;
+  });
+
+  // faq: close siblings on open
+  document.querySelectorAll('.faq-item').forEach(item=>{
+    item.addEventListener('toggle', ()=>{
+      if(item.open){
+        document.querySelectorAll('.faq-item').forEach(other=>{
+          if(other !== item) other.removeAttribute('open');
+        });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
