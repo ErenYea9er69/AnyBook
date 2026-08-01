@@ -98,7 +98,7 @@
 
   /* ---------- nav ---------- */
   header.nav{
-    position:sticky; top:0; z-index:50;
+    position:sticky; top:0; z-index:300;
     background:rgba(4,8,7,0.72);
     backdrop-filter:blur(10px);
     border-bottom:1px solid rgba(199,160,90,0.16);
@@ -371,7 +371,7 @@
 
   /* ---------- search overlay ---------- */
   .search-overlay{
-    position:fixed; inset:0; z-index:200;
+    position:fixed; top:78px; left:0; right:0; bottom:0; z-index:150;
     visibility:hidden; opacity:0;
     transition:opacity 0.25s ease, visibility 0s linear 0.25s;
   }
@@ -385,7 +385,7 @@
   }
   .search-overlay-panel{
     position:relative; height:100%; overflow-y:auto;
-    padding:90px 0 80px;
+    padding:40px 0 80px;
   }
   .overlay-top{ display:flex; align-items:center; gap:16px; }
   .header-search.big{
@@ -409,6 +409,7 @@
   }
 
   .results-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .results-grid[hidden]{ display:none; }
   .result-card{
     text-align:left; background:var(--ink-soft);
     border:1px solid rgba(199,160,90,0.16); border-radius:var(--radius);
@@ -788,28 +789,29 @@
     </div>
   </section>
 
-  <!-- TESTIMONIALS -->
+  <!-- BOOK QUOTES -->
   <section class="on-paper">
     <div class="wrap">
       <div class="section-head reveal">
-        <div class="eyebrow">Readers</div>
-        <h2>What readers say.</h2>
+        <div class="eyebrow">From the library</div>
+        <h2>Lines worth keeping.</h2>
+        <p>A few of the quotes readers save from the "Notable lines" angle of a summary.</p>
       </div>
       <div class="quote-row">
         <div class="quote-card reveal d1">
-          <span class="card-no">CARD NO. 01</span>
-          <p class="q">"I read the summary before book club and still had something to say."</p>
-          <div class="who"><b>Maria T.</b>, book club host</div>
+          <span class="card-no">ATOMIC HABITS</span>
+          <p class="q">"Progress rarely feels dramatic in the moment — it shows up later, all at once, as the sum of habits repeated long before anyone noticed."</p>
+          <div class="who"><b>James Clear</b>, Atomic Habits</div>
         </div>
         <div class="quote-card reveal d2">
-          <span class="card-no">CARD NO. 02</span>
-          <p class="q">"I search for the book I need, not the book on someone else's list."</p>
-          <div class="who"><b>Daniel K.</b>, product manager</div>
+          <span class="card-no">MEDITATIONS</span>
+          <p class="q">"What stands in the way becomes the way, once you stop resisting it."</p>
+          <div class="who"><b>Marcus Aurelius</b>, Meditations</div>
         </div>
         <div class="quote-card reveal d3">
-          <span class="card-no">CARD NO. 03</span>
-          <p class="q">"The pushback section saved me from citing an argument critics already disproved."</p>
-          <div class="who"><b>Priya S.</b>, graduate student</div>
+          <span class="card-no">MAN'S SEARCH FOR MEANING</span>
+          <p class="q">"Everything can be taken from a person except the choice of how to respond to what happens."</p>
+          <div class="who"><b>Viktor Frankl</b>, Man's Search for Meaning</div>
         </div>
       </div>
     </div>
