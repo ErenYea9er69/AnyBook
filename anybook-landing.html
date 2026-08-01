@@ -388,8 +388,14 @@
     padding:90px 0 80px;
   }
   .overlay-top{ display:flex; align-items:center; gap:16px; }
-  .header-search.big{ flex:1; padding:16px 20px; }
+  .header-search.big{
+    flex:1; padding:16px 20px; overflow:hidden;
+    transition:opacity 0.25s ease, flex 0.3s ease, max-width 0.3s ease, padding 0.3s ease, margin 0.3s ease, border-color 0.3s ease;
+  }
   .header-search.big input{ font-size:16px; }
+  .header-search.big.is-hidden{
+    opacity:0; flex:0 0 0; max-width:0; padding:16px 0; margin:0; border-color:transparent; pointer-events:none;
+  }
   .overlay-close{
     width:44px; height:44px; border-radius:50%; flex-shrink:0;
     border:1px solid rgba(243,235,216,0.2); color:var(--on-ink-dim);
@@ -440,20 +446,24 @@
   .detail-head h3{ font-size:27px; margin-bottom:6px; }
   .detail-author{ color:var(--on-ink-dim); font-size:14.5px; }
 
-  .angle-tabs{
-    display:flex; flex-wrap:wrap; gap:8px; margin-bottom:30px;
-    border-bottom:1px solid rgba(243,235,216,0.1); padding-bottom:22px;
+  .angle-sections{ display:flex; flex-direction:column; gap:42px; max-width:680px; }
+  .angle-section{
+    opacity:0; transform:translateY(14px);
+    animation:sectionIn 0.55s ease forwards;
   }
-  .angle-tab{
-    font-family:var(--mono); font-size:12px; letter-spacing:0.03em;
-    padding:9px 16px; border-radius:20px; border:1px solid rgba(243,235,216,0.16);
-    color:var(--on-ink-dim); transition:all 0.2s ease;
+  .angle-section:not(:first-child){
+    padding-top:38px; border-top:1px solid rgba(243,235,216,0.1);
   }
-  .angle-tab:hover{ border-color:var(--gold); color:var(--on-ink); }
-  .angle-tab.is-active{ background:var(--gold); border-color:var(--gold); color:var(--ink-deep); }
+  .angle-section .angle-label{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--gold); display:flex; align-items:center; gap:10px; margin-bottom:16px;
+  }
+  .angle-section .angle-label::before{ content:''; width:18px; height:1px; background:var(--gold); flex-shrink:0; }
+  @keyframes sectionIn{ to{ opacity:1; transform:translateY(0); } }
+  @media (prefers-reduced-motion: reduce){
+    .angle-section{ animation:none; opacity:1; transform:none; }
+  }
 
-  .angle-panel{ max-width:680px; }
-  .angle-panel h4{ font-family:var(--serif); font-size:19px; margin-bottom:14px; }
   .angle-panel > p{ color:var(--on-ink-dim); font-size:15.5px; line-height:1.65; margin-bottom:14px; }
   .chapter-item{ margin-bottom:20px; padding-left:18px; border-left:2px solid rgba(199,160,90,0.3); }
   .chapter-item b{ display:block; color:var(--on-ink); font-family:var(--serif); font-size:15.5px; margin-bottom:4px; }
@@ -601,8 +611,7 @@
             <p class="detail-author" id="detailAuthor"></p>
           </div>
         </div>
-        <div class="angle-tabs" id="angleTabs"></div>
-        <div class="angle-panel" id="anglePanel"></div>
+        <div class="angle-sections" id="angleSections"></div>
       </div>
     </div>
   </div>
@@ -1202,6 +1211,7 @@
     searchOverlay.setAttribute('aria-hidden', 'false');
     document.body.classList.add('no-scroll');
     bookDetail.hidden = true;
+    overlaySearchForm.classList.remove('is-hidden');
     overlaySearchInput.value = query || '';
     renderResults(overlaySearchInput.value);
     setTimeout(()=> overlaySearchInput.focus(), reduceMotion ? 0 : 200);
@@ -1254,9 +1264,11 @@
     const book = BOOKS.find(b => b.id === id);
     if(!book) return;
 
+    // results disappear, search bar disappears (header stays put)
     resultsGrid.hidden = true;
     resultsEmpty.hidden = true;
     overlayMeta.textContent = '';
+    overlaySearchForm.classList.add('is-hidden');
     bookDetail.hidden = false;
 
     document.getElementById('detailCover').style.background = book.cover;
@@ -1264,37 +1276,44 @@
     document.getElementById('detailTitle').textContent = book.title;
     document.getElementById('detailAuthor').textContent = book.author;
 
-    const tabsEl = document.getElementById('angleTabs');
-    tabsEl.innerHTML = '';
-    ANGLE_DEFS.forEach((def, i)=>{
-      const tab = document.createElement('button');
-      tab.type = 'button';
-      tab.className = 'angle-tab' + (i === 0 ? ' is-active' : '');
-      tab.textContent = def.label;
-      tab.addEventListener('click', ()=>{
-        tabsEl.querySelectorAll('.angle-tab').forEach(t=>t.classList.remove('is-active'));
-        tab.classList.add('is-active');
-        renderAnglePanel(book, def.key);
-      });
-      tabsEl.appendChild(tab);
-    });
-
-    renderAnglePanel(book, ANGLE_DEFS[0].key);
+    renderAngleSections(book);
     document.querySelector('.search-overlay-panel').scrollTop = 0;
   }
 
-  function renderAnglePanel(book, key){
-    const panel = document.getElementById('anglePanel');
-    const data = book.angles[key];
+  // book info loads first, then every angle (summary, chapters, quotes...)
+  // stacks in underneath it, one after another
+  function renderAngleSections(book){
+    const container = document.getElementById('angleSections');
+    container.innerHTML = '';
 
+    ANGLE_DEFS.forEach((def, i)=>{
+      const section = document.createElement('div');
+      section.className = 'angle-section';
+      section.style.animationDelay = reduceMotion ? '0s' : (i * 0.09) + 's';
+
+      const label = document.createElement('div');
+      label.className = 'angle-label';
+      label.textContent = def.label;
+
+      const panel = document.createElement('div');
+      panel.className = 'angle-panel';
+      panel.innerHTML = renderAngleContent(book.angles[def.key], def.key);
+
+      section.appendChild(label);
+      section.appendChild(panel);
+      container.appendChild(section);
+    });
+  }
+
+  function renderAngleContent(data, key){
     if(key === 'chapters'){
-      panel.innerHTML = data.map(ch => `<div class="chapter-item"><b>${ch.t}</b><span>${ch.d}</span></div>`).join('');
+      return data.map(ch => `<div class="chapter-item"><b>${ch.t}</b><span>${ch.d}</span></div>`).join('');
     } else if(key === 'quotes'){
-      panel.innerHTML = `<ul class="quote-list">${data.map(q => `<li>${q}</li>`).join('')}</ul>`;
+      return `<ul class="quote-list">${data.map(q => `<li>${q}</li>`).join('')}</ul>`;
     } else if(key === 'uses'){
-      panel.innerHTML = `<ul class="use-list">${data.map(u => `<li>${u}</li>`).join('')}</ul>`;
+      return `<ul class="use-list">${data.map(u => `<li>${u}</li>`).join('')}</ul>`;
     } else {
-      panel.innerHTML = `<p>${data}</p>`;
+      return `<p>${data}</p>`;
     }
   }
 
@@ -1311,6 +1330,7 @@
   document.getElementById('overlayBackdrop').addEventListener('click', closeSearchOverlay);
   document.getElementById('backToResults').addEventListener('click', ()=>{
     bookDetail.hidden = true;
+    overlaySearchForm.classList.remove('is-hidden');
     renderResults(overlaySearchInput.value);
   });
 
