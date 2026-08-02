@@ -517,25 +517,50 @@
       background:rgba(199,160,90,0.18);
     }
   }
+  .rail-progress{
+    position:absolute; left:5px; top:6px; width:1px; height:0%;
+    background:linear-gradient(var(--gold), var(--gold-bright));
+    transition:height 0.5s cubic-bezier(.22,1,.36,1);
+    z-index:1;
+  }
   .rail-item{
     position:relative; display:flex; align-items:center; gap:12px;
-    padding:9px 0 9px 24px; text-align:left; width:100%;
-    color:var(--on-ink-dim); transition:color 0.2s ease;
+    padding:9px 0; text-align:left; width:100%;
+    color:var(--on-ink-dim); transition:color 0.25s ease;
   }
   .rail-item .rail-dot{
-    position:absolute; left:0; top:50%; transform:translateY(-50%);
+    position:relative; z-index:2; flex-shrink:0;
     width:12px; height:12px; border-radius:50%;
     background:var(--ink); border:1px solid rgba(199,160,90,0.4);
     display:flex; align-items:center; justify-content:center; color:var(--ink-deep);
-    transition:border-color 0.2s ease, background 0.2s ease;
+    transition:border-color 0.25s ease, background 0.25s ease, transform 0.3s cubic-bezier(.34,1.56,.64,1);
   }
-  .rail-item .rail-dot svg{ opacity:0; transition:opacity 0.2s ease; }
+  .rail-item .rail-dot svg{
+    position:absolute; opacity:0; transition:opacity 0.2s ease;
+  }
   .rail-item .rail-label{ font-family:var(--mono); font-size:11.5px; letter-spacing:0.03em; line-height:1.3; }
   .rail-item:hover{ color:var(--on-ink); }
   .rail-item:hover .rail-dot{ border-color:var(--gold-bright); }
+
+  /* currently reading: gold ring, gently pulses while it's the active one */
   .rail-item.is-active{ color:var(--gold-bright); }
-  .rail-item.is-active .rail-dot{ background:var(--gold); border-color:var(--gold); }
-  .rail-item.is-active .rail-dot svg{ opacity:1; }
+  .rail-item.is-active .rail-dot{
+    background:var(--gold); border-color:var(--gold);
+    animation:railPulse 1.8s ease-out infinite;
+  }
+  .rail-item.is-active .rail-dot .dot-active{ opacity:1; }
+  @keyframes railPulse{
+    0%{ box-shadow:0 0 0 0 rgba(199,160,90,0.45); }
+    70%{ box-shadow:0 0 0 8px rgba(199,160,90,0); }
+    100%{ box-shadow:0 0 0 0 rgba(199,160,90,0); }
+  }
+
+  /* finished reading it: locks in gold and stays that way, checkmark included */
+  .rail-item.is-complete{ color:var(--gold-bright); }
+  .rail-item.is-complete .rail-dot{
+    background:var(--gold); border-color:var(--gold); transform:scale(1.05);
+  }
+  .rail-item.is-complete .rail-dot .dot-check{ opacity:1; color:var(--ink-deep); }
 
   .detail-head{
     display:flex; gap:24px; align-items:flex-start; margin-bottom:22px;
@@ -1605,12 +1630,20 @@
     angleRail.innerHTML = '';
     if(angleObserver) angleObserver.disconnect();
 
+    const progressFill = document.createElement('div');
+    progressFill.className = 'rail-progress';
+    progressFill.id = 'railProgress';
+    angleRail.appendChild(progressFill);
+
     ANGLE_DEFS.forEach(def=>{
       const item = document.createElement('button');
       item.type = 'button';
       item.className = 'rail-item';
       item.dataset.target = 'angle-' + def.key;
-      item.innerHTML = `<span class="rail-dot"><svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="currentColor"/></svg></span><span class="rail-label">${def.label}</span>`;
+      item.innerHTML = `<span class="rail-dot">
+          <svg class="dot-active" width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="currentColor"/></svg>
+          <svg class="dot-check" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
+        </span><span class="rail-label">${def.label}</span>`;
       item.addEventListener('click', ()=>{
         const target = document.getElementById(item.dataset.target);
         if(target) target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block:'start' });
@@ -1620,18 +1653,30 @@
 
     const panel = document.querySelector('.search-overlay-panel');
     const railItems = angleRail.querySelectorAll('.rail-item');
+    const total = railItems.length;
+
+    // marks everything before the current angle as "done" (locked gold), the
+    // current one as "active" (pulsing), the rest untouched
+    function setProgress(activeIndex){
+      railItems.forEach((item, i)=>{
+        item.classList.toggle('is-active', i === activeIndex);
+        item.classList.toggle('is-complete', i < activeIndex);
+      });
+      const pct = total > 1 ? (activeIndex / (total - 1)) * 100 : 0;
+      progressFill.style.height = pct + '%';
+    }
 
     angleObserver = new IntersectionObserver((entries)=>{
       entries.forEach(entry=>{
         if(!entry.isIntersecting) return;
-        railItems.forEach(i => i.classList.remove('is-active'));
         const match = angleRail.querySelector(`[data-target="${entry.target.id}"]`);
-        if(match) match.classList.add('is-active');
+        if(!match) return;
+        setProgress(Array.prototype.indexOf.call(railItems, match));
       });
     }, { root: panel, rootMargin:'-12% 0px -70% 0px', threshold:0 });
 
     document.querySelectorAll('.angle-section').forEach(section => angleObserver.observe(section));
-    if(railItems[0]) railItems[0].classList.add('is-active');
+    setProgress(0);
   }
 
   function renderAngleContent(data, key){
