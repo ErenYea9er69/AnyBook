@@ -1490,6 +1490,7 @@
   const detailProgress = document.getElementById('detailProgress');
   const angleRail = document.getElementById('angleRail');
   let angleObserver = null;
+  let railFinish = null;
 
   // same strokes as the "what you get" icons up top, reused here so the
   // detail page reads as the same product, not a bolted-on screen
@@ -1666,6 +1667,15 @@
       progressFill.style.height = pct + '%';
     }
 
+    // once the reader hits the very bottom of the panel, there's no "next"
+    // section left to hand the last dot its gold, so finish it by hand
+    railFinish = (scrollPct)=>{
+      if(scrollPct < 99) return;
+      railItems.forEach(item => item.classList.remove('is-active'));
+      railItems.forEach(item => item.classList.add('is-complete'));
+      progressFill.style.height = '100%';
+    };
+
     angleObserver = new IntersectionObserver((entries)=>{
       entries.forEach(entry=>{
         if(!entry.isIntersecting) return;
@@ -1706,6 +1716,10 @@
     const max = panel.scrollHeight - panel.clientHeight;
     const pct = max > 0 ? Math.min(100, (panel.scrollTop / max) * 100) : 0;
     detailProgress.style.width = pct + '%';
+
+    // reached the bottom: the whole rail finishes, including the last angle,
+    // which otherwise never gets a "next" item to hand its gold off to
+    if(railFinish) railFinish(pct);
   });
 
   document.getElementById('overlayClose').addEventListener('click', closeSearchOverlay);
