@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchOverlay } from "@/lib/search-overlay-context";
-import { BOOKS, type Book } from "@/lib/books";
+import { fetchAllBooks, type Book } from "@/lib/books";
 import { ANGLE_DEFS, ANGLE_ICONS, estimateReadMinutes, type AngleKey } from "@/lib/angles";
 
 function renderAngleContent(book: Book, key: AngleKey) {
@@ -13,7 +13,11 @@ function renderAngleContent(book: Book, key: AngleKey) {
         {book.angles.chapters.map((ch, i) => (
           <div className="chapter-item" key={i}>
             <b>{ch.t}</b>
-            <span>{ch.d}</span>
+            {ch.d.split("\n\n").map((para, j) => (
+              <span key={j} style={j > 0 ? { marginTop: "0.5em", display: "block", opacity: 0.85 } : undefined}>
+                {para}
+              </span>
+            ))}
           </div>
         ))}
       </>
@@ -22,9 +26,18 @@ function renderAngleContent(book: Book, key: AngleKey) {
   if (key === "quotes") {
     return (
       <ul className="quote-list">
-        {book.angles.quotes.map((q, i) => (
-          <li key={i}>{q}</li>
-        ))}
+        {book.angles.quotes.map((q, i) => {
+          const lines = q.split("\n");
+          return (
+            <li key={i}>
+              {lines.map((line, j) => (
+                <span key={j} style={j > 0 ? { display: "block", marginTop: "0.3em", opacity: 0.75, fontSize: "0.92em" } : undefined}>
+                  {line}
+                </span>
+              ))}
+            </li>
+          );
+        })}
       </ul>
     );
   }
@@ -42,6 +55,7 @@ function renderAngleContent(book: Book, key: AngleKey) {
 
 export default function SearchOverlay() {
   const { isOpen, query, closeOverlay } = useSearchOverlay();
+  const [books, setBooks] = useState<Book[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [scrollPct, setScrollPct] = useState(0);
@@ -51,6 +65,11 @@ export default function SearchOverlay() {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const railRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Fetch book data from JSON files on mount
+  useEffect(() => {
+    fetchAllBooks().then(setBooks).catch(console.error);
+  }, []);
   const sectionRefs = useRef<Map<AngleKey, HTMLDivElement>>(new Map());
 
   // reset to the results view every time the overlay is opened
@@ -80,16 +99,16 @@ export default function SearchOverlay() {
 
   const matches = useMemo(() => {
     const q = searchValue.trim().toLowerCase();
-    if (!q) return BOOKS;
-    return BOOKS.filter(
+    if (!q) return books;
+    return books.filter(
       (b) =>
         b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)
     );
-  }, [searchValue]);
+  }, [searchValue, books]);
 
   const selectedBook = useMemo(
-    () => BOOKS.find((b) => b.id === selectedId) ?? null,
-    [selectedId]
+    () => books.find((b) => b.id === selectedId) ?? null,
+    [selectedId, books]
   );
 
   function openBook(id: string) {
