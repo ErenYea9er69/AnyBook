@@ -2,26 +2,122 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchOverlay } from "@/lib/search-overlay-context";
-import { fetchAllBooks, type Book } from "@/lib/books";
+import { fetchAllBooks, type Book, type ChapterGroup } from "@/lib/books";
 import { ANGLE_DEFS, ANGLE_ICONS, estimateReadMinutes, type AngleKey } from "@/lib/angles";
+
+/* ------------------------------------------------------------------ */
+/*  Accordion for chapter groups (Part 1, Part 2, Appendices)         */
+/* ------------------------------------------------------------------ */
+
+function ChapterAccordion({ groups }: { groups: ChapterGroup[] }) {
+  // Track which part is open (index), default first one open
+  const [openPart, setOpenPart] = useState<number>(0);
+  // Track which chapter within the open part is expanded (-1 = none)
+  const [openChapter, setOpenChapter] = useState<number>(-1);
+
+  function togglePart(idx: number) {
+    if (openPart === idx) {
+      setOpenPart(-1);
+      setOpenChapter(-1);
+    } else {
+      setOpenPart(idx);
+      setOpenChapter(-1);
+    }
+  }
+
+  function toggleChapter(idx: number) {
+    setOpenChapter(openChapter === idx ? -1 : idx);
+  }
+
+  return (
+    <div className="chapter-accordion">
+      {groups.map((group, gi) => {
+        const isPartOpen = openPart === gi;
+        return (
+          <div className={`part-group${isPartOpen ? " is-open" : ""}`} key={gi}>
+            {/* Part header */}
+            <button
+              type="button"
+              className="part-header"
+              onClick={() => togglePart(gi)}
+              aria-expanded={isPartOpen}
+            >
+              <svg
+                className="part-chevron"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="9 6 15 12 9 18" />
+              </svg>
+              <span className="part-title">{group.partTitle}</span>
+              <span className="part-count">{group.chapters.length} ch.</span>
+            </button>
+
+            {/* Chapters list — animated collapse */}
+            <div className="part-chapters-wrap" aria-hidden={!isPartOpen}>
+              <div className="part-chapters-inner">
+                {group.chapters.map((ch, ci) => {
+                  const isChOpen = isPartOpen && openChapter === ci;
+                  return (
+                    <div
+                      className={`chapter-accordion-item${isChOpen ? " is-expanded" : ""}`}
+                      key={ci}
+                    >
+                      <button
+                        type="button"
+                        className="chapter-title-btn"
+                        onClick={() => toggleChapter(ci)}
+                        aria-expanded={isChOpen}
+                      >
+                        <span className="chapter-num">{ci + 1}</span>
+                        <span className="chapter-name">{ch.t}</span>
+                        <svg
+                          className="ch-chevron"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </button>
+                      <div className="chapter-body-wrap" aria-hidden={!isChOpen}>
+                        <div className="chapter-body-inner">
+                          {ch.d.split("\n\n").map((para, j) => (
+                            <p key={j} className={j > 0 ? "chapter-sub-section" : undefined}>
+                              {para}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 
 function renderAngleContent(book: Book, key: AngleKey) {
   const data = book.angles[key];
   if (key === "chapters") {
-    return (
-      <>
-        {book.angles.chapters.map((ch, i) => (
-          <div className="chapter-item" key={i}>
-            <b>{ch.t}</b>
-            {ch.d.split("\n\n").map((para, j) => (
-              <span key={j} style={j > 0 ? { marginTop: "0.5em", display: "block", opacity: 0.85 } : undefined}>
-                {para}
-              </span>
-            ))}
-          </div>
-        ))}
-      </>
-    );
+    return <ChapterAccordion groups={book.angles.chapters} />;
   }
   if (key === "quotes") {
     return (
@@ -61,6 +157,7 @@ export default function SearchOverlay() {
   const [scrollPct, setScrollPct] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const [trackHeight, setTrackHeight] = useState(0);
+  const [railOpenPart, setRailOpenPart] = useState<number>(-1);
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const railRef = useRef<HTMLDivElement | null>(null);
@@ -300,39 +397,74 @@ export default function SearchOverlay() {
                   id="railProgress"
                   style={{ height: `${progressHeight}px` }}
                 />
-                {ANGLE_DEFS.map((def, i) => (
-                  <button
-                    key={def.key}
-                    type="button"
-                    className={`rail-item${
-                      !finished && i === activeIndex ? " is-active" : ""
-                    }${finished || i < activeIndex ? " is-complete" : ""}`}
-                    onClick={() => {
-                      const el = sectionRefs.current.get(def.key);
-                      el?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                  >
-                    <span className="rail-dot">
-                      <svg className="dot-active" width="7" height="7" viewBox="0 0 7 7">
-                        <circle cx="3.5" cy="3.5" r="3.5" fill="currentColor" />
-                      </svg>
-                      <svg
-                        className="dot-check"
-                        width="9"
-                        height="9"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                {ANGLE_DEFS.map((def, i) => {
+                  const isActive = !finished && i === activeIndex;
+                  const isComplete = finished || i < activeIndex;
+                  const isChapters = def.key === "chapters";
+                  const showChapterSubs = isChapters && (isActive || isComplete);
+
+                  return (
+                    <div key={def.key} className="rail-item-wrap">
+                      <button
+                        type="button"
+                        className={`rail-item${isActive ? " is-active" : ""}${isComplete ? " is-complete" : ""}`}
+                        onClick={() => {
+                          const el = sectionRefs.current.get(def.key);
+                          el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }}
                       >
-                        <polyline points="4 12 9 17 20 6" />
-                      </svg>
-                    </span>
-                    <span className="rail-label">{def.label}</span>
-                  </button>
-                ))}
+                        <span className="rail-dot">
+                          <svg className="dot-active" width="7" height="7" viewBox="0 0 7 7">
+                            <circle cx="3.5" cy="3.5" r="3.5" fill="currentColor" />
+                          </svg>
+                          <svg
+                            className="dot-check"
+                            width="9"
+                            height="9"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="4 12 9 17 20 6" />
+                          </svg>
+                        </span>
+                        <span className="rail-label">{def.label}</span>
+                      </button>
+
+                      {/* Nested chapter sub-nav inside the rail */}
+                      {isChapters && selectedBook && (
+                        <div className={`rail-chapters-sub${showChapterSubs ? " is-visible" : ""}`}>
+                          <div className="rail-chapters-sub-inner">
+                          {selectedBook.angles.chapters.map((group, gi) => (
+                            <div key={gi} className="rail-part-group">
+                              <button
+                                type="button"
+                                className={`rail-part-btn${railOpenPart === gi ? " is-open" : ""}`}
+                                onClick={() => setRailOpenPart(railOpenPart === gi ? -1 : gi)}
+                              >
+                                <svg className="rail-part-chevron" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="9 6 15 12 9 18" />
+                                </svg>
+                                <span>{group.partTitle}</span>
+                              </button>
+                              <div className={`rail-ch-list${railOpenPart === gi ? " is-open" : ""}`}>
+                                <div className="rail-ch-list-inner">
+                                  {group.chapters.map((ch, ci) => (
+                                    <span key={ci} className="rail-ch-name">{ch.t}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </aside>
 
               <div className="detail-main">

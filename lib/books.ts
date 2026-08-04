@@ -1,8 +1,13 @@
 export type ChapterEntry = { t: string; d: string };
 
+export type ChapterGroup = {
+  partTitle: string;
+  chapters: ChapterEntry[];
+};
+
 export type BookAngles = {
   argument: string;
-  chapters: ChapterEntry[];
+  chapters: ChapterGroup[];
   quotes: string[];
   uses: string[];
   pushback: string;
@@ -38,6 +43,39 @@ function slugify(text: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
+/* ---------- chapter parser helper ---------- */
+type RawChapter = {
+  chapter_number?: number | string;
+  title: string;
+  summary?: string;
+  text?: string;
+  how_it_builds_on_previous_chapter?: string;
+  key_turning_point_or_evidence?: string;
+  analysis?: string;
+  worked_example?: string;
+};
+
+function parseChapters(rawChapters: RawChapter[]): ChapterEntry[] {
+  return rawChapters.map((ch) => {
+    const parts: string[] = [];
+    if (ch.summary) parts.push(ch.summary);
+    if (ch.text) parts.push(ch.text);
+    if (ch.how_it_builds_on_previous_chapter)
+      parts.push(`How it builds: ${ch.how_it_builds_on_previous_chapter}`);
+    if (ch.key_turning_point_or_evidence)
+      parts.push(`Key evidence: ${ch.key_turning_point_or_evidence}`);
+    if (ch.worked_example)
+      parts.push(`Worked example: ${ch.worked_example}`);
+    if (ch.analysis)
+      parts.push(`Analysis: ${ch.analysis}`);
+
+    return {
+      t: ch.chapter_number ? `Chapter ${ch.chapter_number}: ${ch.title}` : ch.title,
+      d: parts.join("\n\n"),
+    };
+  });
+}
+
 /* ------------------------------------------------------------------ */
 /*  Transform raw JSON (the structured format) into a Book object     */
 /* ------------------------------------------------------------------ */
@@ -46,43 +84,35 @@ function slugify(text: string): string {
 export function parseBookFromJSON(raw: any, colorIndex = 0): Book {
   const facts = raw.section_1_quick_facts;
 
-  // Combine all chapters from part_1, part_2, and appendices
-  const allChapters = [
-    ...(raw.part_1_chapters || []),
-    ...(raw.part_2_chapters || []),
-    ...(raw.appendices || []),
-  ];
+  // Group chapters by part, preserving the structure from the JSON
+  const chapterGroups: ChapterGroup[] = [];
 
-  const chapters: ChapterEntry[] = allChapters.map(
-    (ch: {
-      chapter_number?: number | string;
-      title: string;
-      summary?: string;
-      text?: string;
-      how_it_builds_on_previous_chapter?: string;
-      key_turning_point_or_evidence?: string;
-      analysis?: string;
-      worked_example?: string;
-    }) => {
-      // Combine all available content fields from the JSON
-      const parts: string[] = [];
-      if (ch.summary) parts.push(ch.summary);
-      if (ch.text) parts.push(ch.text);
-      if (ch.how_it_builds_on_previous_chapter)
-        parts.push(`How it builds: ${ch.how_it_builds_on_previous_chapter}`);
-      if (ch.key_turning_point_or_evidence)
-        parts.push(`Key evidence: ${ch.key_turning_point_or_evidence}`);
-      if (ch.worked_example)
-        parts.push(`Worked example: ${ch.worked_example}`);
-      if (ch.analysis)
-        parts.push(`Analysis: ${ch.analysis}`);
+  if (raw.part_1_chapters?.length) {
+    chapterGroups.push({
+      partTitle: "Part One — The Seductive Character",
+      chapters: parseChapters(raw.part_1_chapters),
+    });
+  }
+  if (raw.part_2_chapters?.length) {
+    chapterGroups.push({
+      partTitle: "Part Two — The Seductive Process",
+      chapters: parseChapters(raw.part_2_chapters),
+    });
+  }
+  if (raw.appendices?.length) {
+    chapterGroups.push({
+      partTitle: "Appendices",
+      chapters: parseChapters(raw.appendices),
+    });
+  }
 
-      return {
-        t: ch.chapter_number ? `Chapter ${ch.chapter_number}: ${ch.title}` : ch.title,
-        d: parts.join("\n\n"),
-      };
-    }
-  );
+  // Fallback: if none of the above keys exist, try a flat array
+  if (chapterGroups.length === 0 && raw.chapters?.length) {
+    chapterGroups.push({
+      partTitle: "Chapters",
+      chapters: parseChapters(raw.chapters),
+    });
+  }
 
   const quotes: string[] = (raw.section_5_notable_quotes || []).map(
     (q: { quote: string; location?: string; analysis?: string }) => {
@@ -118,7 +148,7 @@ export function parseBookFromJSON(raw: any, colorIndex = 0): Book {
     cover: COVER_COLORS[colorIndex % COVER_COLORS.length],
     angles: {
       argument: raw.section_2_core_argument || "",
-      chapters,
+      chapters: chapterGroups,
       quotes,
       uses,
       pushback,

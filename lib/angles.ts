@@ -37,7 +37,16 @@ export function estimateReadMinutes(book: Book): number {
   let words = 0;
   ANGLE_DEFS.forEach((def) => {
     const val = book.angles[def.key];
-    if (Array.isArray(val)) {
+    if (def.key === "chapters") {
+      // chapters is now ChapterGroup[]
+      const groups = val as { partTitle: string; chapters: { t: string; d: string }[] }[];
+      groups.forEach((group) => {
+        words += group.partTitle.trim().split(/\s+/).length;
+        group.chapters.forEach((ch) => {
+          words += `${ch.t} ${ch.d}`.trim().split(/\s+/).length;
+        });
+      });
+    } else if (Array.isArray(val)) {
       val.forEach((item) => {
         const text =
           typeof item === "object" ? `${item.t} ${item.d}` : String(item);
