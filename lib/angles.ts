@@ -49,7 +49,9 @@ export function estimateReadMinutes(book: Book): number {
     } else if (Array.isArray(val)) {
       val.forEach((item) => {
         const text =
-          typeof item === "object" ? `${item.t} ${item.d}` : String(item);
+          typeof item === "object"
+            ? `${(item as Record<string, unknown>).t ?? ""} ${(item as Record<string, unknown>).d ?? ""}`
+            : String(item);
         words += text.trim().split(/\s+/).length;
       });
     } else {
