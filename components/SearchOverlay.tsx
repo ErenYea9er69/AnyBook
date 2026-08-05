@@ -14,7 +14,11 @@ function renderAngleContent(book: Book, key: AngleKey) {
           <div key={gi} className="chapter-part-section">
             <h4 className="chapter-part-heading">{group.partTitle}</h4>
             {group.chapters.map((ch, ci) => (
-              <div className="chapter-item" key={ci}>
+              <div
+                className="chapter-item"
+                key={ci}
+                data-chapter-id={`${gi}-${ci}`}
+              >
                 <b>{ch.t}</b>
                 {ch.d.split("\n\n").map((para, j) => (
                   <span key={j} style={j > 0 ? { marginTop: "0.5em", display: "block", opacity: 0.85 } : undefined}>
@@ -67,6 +71,8 @@ export default function SearchOverlay() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [trackHeight, setTrackHeight] = useState(0);
   const [railOpenPart, setRailOpenPart] = useState<number>(-1);
+  const [activeChapterId, setActiveChapterId] = useState<string | null>(null);
+  const [chaptersDone, setChaptersDone] = useState(false);
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const railRef = useRef<HTMLDivElement | null>(null);
@@ -121,6 +127,9 @@ export default function SearchOverlay() {
     setSelectedId(id);
     setActiveIndex(0);
     setScrollPct(0);
+    setChaptersDone(false);
+    setRailOpenPart(-1);
+    setActiveChapterId(null);
     sectionRefs.current.clear();
     requestAnimationFrame(() => {
       if (panelRef.current) panelRef.current.scrollTop = 0;
@@ -173,7 +182,15 @@ export default function SearchOverlay() {
           if (!entry.isIntersecting) return;
           const key = entry.target.getAttribute("data-angle") as AngleKey;
           const idx = ANGLE_DEFS.findIndex((d) => d.key === key);
-          if (idx !== -1) setActiveIndex(idx);
+          if (idx !== -1) {
+            setActiveIndex(idx);
+            // When we scroll past the chapters section, auto-close the chapter sub-nav
+            if (key !== "chapters") {
+              setChaptersDone(true);
+            } else {
+              setChaptersDone(false);
+            }
+          }
         });
       },
       { root: panel, rootMargin: "-12% 0px -70% 0px", threshold: 0 }
@@ -181,6 +198,35 @@ export default function SearchOverlay() {
 
     sectionRefs.current.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
+  }, [selectedBook]);
+
+  // chapter-level scroll-spy: track which individual chapter is in view
+  useEffect(() => {
+    if (!selectedBook) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const chapterEls = panel.querySelectorAll<HTMLElement>("[data-chapter-id]");
+    if (!chapterEls.length) return;
+
+    const chObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const id = entry.target.getAttribute("data-chapter-id");
+          if (id) {
+            setActiveChapterId(id);
+            // auto-open the matching part group in the rail
+            const partIdx = parseInt(id.split("-")[0], 10);
+            if (!isNaN(partIdx)) setRailOpenPart(partIdx);
+          }
+        });
+      },
+      { root: panel, rootMargin: "-10% 0px -75% 0px", threshold: 0 }
+    );
+
+    chapterEls.forEach((el) => chObserver.observe(el));
+    return () => chObserver.disconnect();
   }, [selectedBook]);
 
   function handlePanelScroll() {
@@ -310,7 +356,7 @@ export default function SearchOverlay() {
                   const isActive = !finished && i === activeIndex;
                   const isComplete = finished || i < activeIndex;
                   const isChapters = def.key === "chapters";
-                  const showChapterSubs = isChapters && (isActive || isComplete);
+                  const showChapterSubs = isChapters && (isActive || isComplete) && !chaptersDone;
 
                   return (
                     <div key={def.key} className="rail-item-wrap">
@@ -361,9 +407,25 @@ export default function SearchOverlay() {
                               </button>
                               <div className={`rail-ch-list${railOpenPart === gi ? " is-open" : ""}`}>
                                 <div className="rail-ch-list-inner">
-                                  {group.chapters.map((ch, ci) => (
-                                    <span key={ci} className="rail-ch-name">{ch.t}</span>
-                                  ))}
+                                  {group.chapters.map((ch, ci) => {
+                                    const chId = `${gi}-${ci}`;
+                                    const isActiveChapter = activeChapterId === chId;
+                                    return (
+                                      <button
+                                        type="button"
+                                        key={ci}
+                                        className={`rail-ch-name${isActiveChapter ? " is-active" : ""}`}
+                                        onClick={() => {
+                                          const el = panelRef.current?.querySelector(
+                                            `[data-chapter-id="${chId}"]`
+                                          );
+                                          el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                        }}
+                                      >
+                                        {ch.t}
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             </div>

@@ -641,16 +641,21 @@
   }
 
   .rail-ch-name{
-    display:block;
+    display:block; width:100%; text-align:left;
     padding:3px 0 3px 14px;
     font-family:var(--mono); font-size:9.5px; letter-spacing:0.01em;
     color:var(--on-ink-dim); line-height:1.35;
-    border-left:1px solid rgba(199,160,90,0.15);
+    border:none; border-left:1px solid rgba(199,160,90,0.15);
+    background:none; cursor:pointer;
     opacity:0.6;
-    transition:opacity 0.2s ease, color 0.2s ease;
+    transition:opacity 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
   }
   .rail-ch-name:hover{
     opacity:1; color:var(--on-ink);
+  }
+  .rail-ch-name.is-active{
+    opacity:1; color:var(--gold-bright);
+    border-left-color:var(--gold);
   }
 
   .detail-head{
