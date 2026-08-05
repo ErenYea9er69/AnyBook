@@ -53,21 +53,41 @@ type RawChapter = {
   key_turning_point_or_evidence?: string;
   analysis?: string;
   worked_example?: string;
+  core_thesis?: string;
+  key_frameworks_and_models?: string;
+  step_by_step_processes?: string;
+  real_world_examples_and_case_studies?: string;
+  tactical_lists_and_cheat_codes?: string;
+  psychological_mechanisms?: string;
+  actionable_takeaways?: string;
 };
 
 function parseChapters(rawChapters: RawChapter[]): ChapterEntry[] {
   return rawChapters.map((ch) => {
     const parts: string[] = [];
     if (ch.summary) parts.push(ch.summary);
+    if (ch.core_thesis) parts.push(`Core Thesis: ${ch.core_thesis}`);
     if (ch.text) parts.push(ch.text);
     if (ch.how_it_builds_on_previous_chapter)
       parts.push(`How it builds: ${ch.how_it_builds_on_previous_chapter}`);
     if (ch.key_turning_point_or_evidence)
       parts.push(`Key evidence: ${ch.key_turning_point_or_evidence}`);
+    if (ch.key_frameworks_and_models)
+      parts.push(`Frameworks & Models: ${ch.key_frameworks_and_models}`);
+    if (ch.step_by_step_processes)
+      parts.push(`Step-by-step: ${ch.step_by_step_processes}`);
+    if (ch.real_world_examples_and_case_studies)
+      parts.push(`Case studies: ${ch.real_world_examples_and_case_studies}`);
     if (ch.worked_example)
       parts.push(`Worked example: ${ch.worked_example}`);
     if (ch.analysis)
       parts.push(`Analysis: ${ch.analysis}`);
+    if (ch.tactical_lists_and_cheat_codes)
+      parts.push(`Tactics & Cheat codes: ${ch.tactical_lists_and_cheat_codes}`);
+    if (ch.psychological_mechanisms)
+      parts.push(`Psychological mechanisms: ${ch.psychological_mechanisms}`);
+    if (ch.actionable_takeaways)
+      parts.push(`Actionable takeaways: ${ch.actionable_takeaways}`);
 
     return {
       t: ch.chapter_number ? `Chapter ${ch.chapter_number}: ${ch.title}` : ch.title,
@@ -82,7 +102,7 @@ function parseChapters(rawChapters: RawChapter[]): ChapterEntry[] {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function parseBookFromJSON(raw: any, colorIndex = 0): Book {
-  const facts = raw.section_1_quick_facts;
+  const facts = raw.section_1_quick_facts || raw.quick_facts;
 
   // Group chapters by part, preserving the structure from the JSON
   const chapterGroups: ChapterGroup[] = [];
@@ -97,6 +117,12 @@ export function parseBookFromJSON(raw: any, colorIndex = 0): Book {
     chapterGroups.push({
       partTitle: "Part Two — The Seductive Process",
       chapters: parseChapters(raw.part_2_chapters),
+    });
+  }
+  if (raw.section_3_chapter_breakdowns?.length) {
+    chapterGroups.push({
+      partTitle: "Chapters",
+      chapters: parseChapters(raw.section_3_chapter_breakdowns),
     });
   }
   if (raw.appendices?.length) {
@@ -115,9 +141,10 @@ export function parseBookFromJSON(raw: any, colorIndex = 0): Book {
   }
 
   const quotes: string[] = (raw.section_5_notable_quotes || []).map(
-    (q: { quote: string; location?: string; analysis?: string }) => {
+    (q: { quote: string; location?: string; analysis?: string; attributed_to?: string }) => {
       const parts = [`"${q.quote}"`];
       if (q.location) parts.push(`— ${q.location}`);
+      if (q.attributed_to) parts.push(`— ${q.attributed_to}`);
       if (q.analysis) parts.push(q.analysis);
       return parts.join("\n");
     }
@@ -137,17 +164,28 @@ export function parseBookFromJSON(raw: any, colorIndex = 0): Book {
     pushback = raw.section_7_pushback_and_criticism || "";
   }
 
-  const authorBg: string = raw.section_8_author_background || "";
+  let authorBg: string = "";
+  if (typeof raw.section_8_author_background === "string") {
+    authorBg = raw.section_8_author_background;
+  } else if (typeof raw.section_8_author_background === "object" && raw.section_8_author_background !== null) {
+    authorBg = Object.values(raw.section_8_author_background).join("\n\n");
+  }
+
+  const categoryStr = facts.fiction_or_non_fiction 
+    ? `${facts.fiction_or_non_fiction} · ${facts.genre}`.replace(/\.\s*$/, "")
+    : facts.genre;
+
+  const hookStr = facts.description || facts.core_premise || "";
 
   return {
     id: slugify(facts.title),
     title: facts.title,
     author: facts.author,
-    category: `${facts.fiction_or_non_fiction} · ${facts.genre}`.replace(/\.\s*$/, ""),
-    hook: facts.description,
+    category: categoryStr,
+    hook: hookStr,
     cover: COVER_COLORS[colorIndex % COVER_COLORS.length],
     angles: {
-      argument: raw.section_2_core_argument || "",
+      argument: raw.section_2_core_argument || raw.core_argument || "",
       chapters: chapterGroups,
       quotes,
       uses,
@@ -165,6 +203,7 @@ export function parseBookFromJSON(raw: any, colorIndex = 0): Book {
 
 export const BOOK_DATA_FILES: string[] = [
   "/data/the_art_of_seduction_structured.json",
+  "/data/100M_Offers_structured.json",
 ];
 
 /* ------------------------------------------------------------------ */
