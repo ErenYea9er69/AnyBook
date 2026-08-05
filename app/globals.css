@@ -524,7 +524,12 @@
     .angle-rail{
       display:flex; flex-direction:column; gap:2px;
       position:fixed; top:190px; left:calc(50% - 600px); width:220px; z-index:4;
+      max-height:calc(100vh - 220px);
+      overflow-y:auto;
+      scrollbar-width:none;          /* Firefox */
+      -ms-overflow-style:none;       /* IE/Edge */
     }
+    .angle-rail::-webkit-scrollbar{ display:none; }  /* Chrome/Safari */
     .angle-rail::before{
       content:''; position:absolute; left:5px; width:1px;
       top:var(--rail-line-top, 15px); bottom:var(--rail-line-bottom, 15px);

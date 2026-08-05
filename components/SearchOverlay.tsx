@@ -219,6 +219,13 @@ export default function SearchOverlay() {
             // auto-open the matching part group in the rail
             const partIdx = parseInt(id.split("-")[0], 10);
             if (!isNaN(partIdx)) setRailOpenPart(partIdx);
+            // scroll the active chapter into view within the rail
+            requestAnimationFrame(() => {
+              const rail = railRef.current;
+              if (!rail) return;
+              const activeBtn = rail.querySelector(`.rail-ch-name.is-active`) as HTMLElement | null;
+              activeBtn?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            });
           }
         });
       },
