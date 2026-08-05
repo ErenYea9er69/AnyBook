@@ -60,6 +60,12 @@ type RawChapter = {
   tactical_lists_and_cheat_codes?: string;
   psychological_mechanisms?: string;
   actionable_takeaways?: string;
+  placement_in_the_arc?: string;
+  detailed_argument_reconstruction?: string;
+  key_terminology_and_translation_nuances?: string;
+  historical_and_contemporary_evidence?: string;
+  direct_prescriptive_advice?: string;
+  notable_quotations?: string;
 };
 
 function parseChapters(rawChapters: RawChapter[]): ChapterEntry[] {
@@ -67,11 +73,15 @@ function parseChapters(rawChapters: RawChapter[]): ChapterEntry[] {
     const parts: string[] = [];
     if (ch.summary) parts.push(ch.summary);
     if (ch.core_thesis) parts.push(`Core Thesis: ${ch.core_thesis}`);
+    if (ch.placement_in_the_arc) parts.push(`Placement in Arc: ${ch.placement_in_the_arc}`);
+    if (ch.detailed_argument_reconstruction) parts.push(`Detailed Argument Reconstruction: ${ch.detailed_argument_reconstruction}`);
     if (ch.text) parts.push(ch.text);
     if (ch.how_it_builds_on_previous_chapter)
       parts.push(`How it builds: ${ch.how_it_builds_on_previous_chapter}`);
     if (ch.key_turning_point_or_evidence)
       parts.push(`Key evidence: ${ch.key_turning_point_or_evidence}`);
+    if (ch.historical_and_contemporary_evidence)
+      parts.push(`Historical & Contemporary Evidence: ${ch.historical_and_contemporary_evidence}`);
     if (ch.key_frameworks_and_models)
       parts.push(`Frameworks & Models: ${ch.key_frameworks_and_models}`);
     if (ch.step_by_step_processes)
@@ -82,12 +92,18 @@ function parseChapters(rawChapters: RawChapter[]): ChapterEntry[] {
       parts.push(`Worked example: ${ch.worked_example}`);
     if (ch.analysis)
       parts.push(`Analysis: ${ch.analysis}`);
+    if (ch.key_terminology_and_translation_nuances)
+      parts.push(`Key Terminology & Translation Nuances: ${ch.key_terminology_and_translation_nuances}`);
+    if (ch.direct_prescriptive_advice)
+      parts.push(`Direct Prescriptive Advice: ${ch.direct_prescriptive_advice}`);
     if (ch.tactical_lists_and_cheat_codes)
       parts.push(`Tactics & Cheat codes: ${ch.tactical_lists_and_cheat_codes}`);
     if (ch.psychological_mechanisms)
       parts.push(`Psychological mechanisms: ${ch.psychological_mechanisms}`);
     if (ch.actionable_takeaways)
       parts.push(`Actionable takeaways: ${ch.actionable_takeaways}`);
+    if (ch.notable_quotations)
+      parts.push(`Notable Quotations: ${ch.notable_quotations}`);
 
     return {
       t: ch.chapter_number ? `Chapter ${ch.chapter_number}: ${ch.title}` : ch.title,
@@ -150,7 +166,8 @@ export function parseBookFromJSON(raw: any, colorIndex = 0): Book {
     }
   );
 
-  const uses: string[] = (raw.section_6_real_world_use_lessons_and_takeaways || []).map(
+  const usesRaw = raw.section_6_real_world_use_lessons_and_takeaways || raw.section_6_real_world_use_and_lessons || [];
+  const uses: string[] = usesRaw.map(
     (u: { title: string; text: string }) => `${u.title}: ${u.text}`
   );
 
@@ -204,6 +221,7 @@ export function parseBookFromJSON(raw: any, colorIndex = 0): Book {
 export const BOOK_DATA_FILES: string[] = [
   "/data/the_art_of_seduction_structured.json",
   "/data/100M_Offers_structured.json",
+  "/data/The_Prince_structured.json",
 ];
 
 /* ------------------------------------------------------------------ */
