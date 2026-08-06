@@ -24,8 +24,8 @@ export default function Header() {
   return (
     <header className="nav" id="top" ref={navRef}>
       <div className="wrap">
-        <div className="logo" style={{ alignItems: 'center' }}>
-          <img src="/logo.png" alt="AnyBook Logo" style={{ height: '32px', width: 'auto', marginRight: '4px' }} />
+        <div className="logo" style={{ alignItems: 'center', gap: '2px' }}>
+          <img src="/logo.png" alt="AnyBook Logo" style={{ height: '60px', width: 'auto', marginRight: '-8px', marginLeft: '-6px' }} />
           Any<span className="dot">Book</span>
         </div>
         <nav className="links">
