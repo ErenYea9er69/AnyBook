@@ -27,7 +27,8 @@ function formatChapterPara(para: string, j: number) {
 
   if (match) {
     const lines = para.split("\n").filter(l => l.trim() !== "");
-    const firstLineText = lines[0].slice(match.length + 1).trim();
+    let firstLineText = lines[0].slice(match.length + 1).trim();
+    firstLineText = firstLineText.replace(/^\d+[\.\)]\s*/, '').replace(/^[\*\-]\s*/, '');
     const hasMultipleItems = lines.length > 1;
 
     return (
@@ -41,11 +42,14 @@ function formatChapterPara(para: string, j: number) {
             {firstLineText && (
               <span style={{ display: "block", marginTop: "0.3em" }}>1. {firstLineText}</span>
             )}
-            {lines.slice(1).map((line, k) => (
-              <span key={k} style={{ display: "block", marginTop: "0.3em" }}>
-                {(firstLineText ? k + 2 : k + 1)}. {line}
-              </span>
-            ))}
+            {lines.slice(1).map((line, k) => {
+              const cleanedLine = line.replace(/^\d+[\.\)]\s*/, '').replace(/^[\*\-]\s*/, '');
+              return (
+                <span key={k} style={{ display: "block", marginTop: "0.3em" }}>
+                  {(firstLineText ? k + 2 : k + 1)}. {cleanedLine}
+                </span>
+              );
+            })}
           </span>
         )}
       </span>
