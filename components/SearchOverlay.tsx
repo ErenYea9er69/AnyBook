@@ -22,7 +22,11 @@ function renderAngleContent(book: Book, key: AngleKey) {
                 <b>{ch.t}</b>
                 {ch.d.split("\n\n").map((para, j) => (
                   <span key={j} style={j > 0 ? { marginTop: "0.5em", display: "block", opacity: 0.85 } : undefined}>
-                    {para}
+                    {para.split("\n").map((line, k) => (
+                      <span key={k} style={k > 0 ? { display: "block", marginTop: "0.2em" } : undefined}>
+                        {line}
+                      </span>
+                    ))}
                   </span>
                 ))}
               </div>
@@ -59,7 +63,14 @@ function renderAngleContent(book: Book, key: AngleKey) {
       </ul>
     );
   }
-  return <p>{data as string}</p>;
+  const textData = (data as string) || "";
+  return (
+    <>
+      {textData.split(/\n+/).map((para, i) => (
+        <p key={i}>{para}</p>
+      ))}
+    </>
+  );
 }
 
 export default function SearchOverlay() {
