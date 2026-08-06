@@ -5,6 +5,64 @@ import { useSearchOverlay } from "@/lib/search-overlay-context";
 import { fetchAllBooks, type Book } from "@/lib/books";
 import { ANGLE_DEFS, ANGLE_ICONS, estimateReadMinutes, type AngleKey } from "@/lib/angles";
 
+const KNOWN_PREFIXES = [
+  "Core Thesis", "Placement in Arc", "Detailed Argument Reconstruction",
+  "How it builds", "Key evidence", "Historical & Contemporary Evidence",
+  "Frameworks & Models", "Step-by-step", "Case studies", "Worked example",
+  "Analysis", "Key Terminology & Translation Nuances", "Direct Prescriptive Advice",
+  "Tactics & Cheat codes", "Psychological mechanisms", "Actionable takeaways",
+  "Notable Quotations"
+];
+
+function formatChapterPara(para: string, j: number) {
+  let match = null;
+  for (const p of KNOWN_PREFIXES) {
+    if (para.startsWith(p + ":")) {
+      match = p;
+      break;
+    }
+  }
+
+  const wrapperStyle = j > 0 ? { marginTop: "1em", display: "block", opacity: 0.85 } : { display: "block", opacity: 0.85 };
+
+  if (match) {
+    const lines = para.split("\n").filter(l => l.trim() !== "");
+    const firstLineText = lines[0].slice(match.length + 1).trim();
+    const hasMultipleItems = lines.length > 1;
+
+    return (
+      <span key={j} style={wrapperStyle}>
+        <span style={{ display: "block" }}>
+          <strong style={{ color: "var(--gold, #C7A05A)" }}>{match}:</strong>{" "}
+          {!hasMultipleItems ? firstLineText : ""}
+        </span>
+        {hasMultipleItems && (
+          <span style={{ display: "block", paddingLeft: "1em" }}>
+            {firstLineText && (
+              <span style={{ display: "block", marginTop: "0.3em" }}>1. {firstLineText}</span>
+            )}
+            {lines.slice(1).map((line, k) => (
+              <span key={k} style={{ display: "block", marginTop: "0.3em" }}>
+                {(firstLineText ? k + 2 : k + 1)}. {line}
+              </span>
+            ))}
+          </span>
+        )}
+      </span>
+    );
+  }
+
+  return (
+    <span key={j} style={wrapperStyle}>
+      {para.split("\n").map((line, k) => (
+        <span key={k} style={k > 0 ? { display: "block", marginTop: "0.3em" } : undefined}>
+          {line}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function renderAngleContent(book: Book, key: AngleKey) {
   const data = book.angles[key];
   if (key === "chapters") {
@@ -20,15 +78,7 @@ function renderAngleContent(book: Book, key: AngleKey) {
                 data-chapter-id={`${gi}-${ci}`}
               >
                 <b>{ch.t}</b>
-                {ch.d.split("\n\n").map((para, j) => (
-                  <span key={j} style={j > 0 ? { marginTop: "0.5em", display: "block", opacity: 0.85 } : undefined}>
-                    {para.split("\n").map((line, k) => (
-                      <span key={k} style={k > 0 ? { display: "block", marginTop: "0.2em" } : undefined}>
-                        {line}
-                      </span>
-                    ))}
-                  </span>
-                ))}
+                {ch.d.split("\n\n").map((para, j) => formatChapterPara(para, j))}
               </div>
             ))}
           </div>
