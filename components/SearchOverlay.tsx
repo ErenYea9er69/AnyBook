@@ -132,6 +132,18 @@ export default function SearchOverlay() {
   const [books, setBooks] = useState<Book[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Sync book state with popstate
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      setSelectedId(params.get("book") || null);
+    };
+    handlePopState();
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   const [scrollPct, setScrollPct] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const [trackHeight, setTrackHeight] = useState(0);
@@ -152,14 +164,19 @@ export default function SearchOverlay() {
   // reset to the results view every time the overlay is opened
   useEffect(() => {
     if (!isOpen) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing local view state with the isOpen/query props from context
     setSearchValue(query);
-    setSelectedId(null);
-    setScrollPct(0);
+    
     document.body.classList.add("no-scroll");
-    const t = setTimeout(() => inputRef.current?.focus(), 200);
+    let t: NodeJS.Timeout;
+    
+    const params = new URLSearchParams(window.location.search);
+    if (!params.get("book")) {
+      setScrollPct(0);
+      t = setTimeout(() => inputRef.current?.focus(), 200);
+    }
+
     return () => {
-      clearTimeout(t);
+      if (t) clearTimeout(t);
       document.body.classList.remove("no-scroll");
     };
   }, [isOpen, query]);
@@ -199,10 +216,19 @@ export default function SearchOverlay() {
     requestAnimationFrame(() => {
       if (panelRef.current) panelRef.current.scrollTop = 0;
     });
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("search", "true");
+    params.set("book", id);
+    window.history.pushState({}, "", "?" + params.toString());
   }
 
   function backToResults() {
     setSelectedId(null);
+    
+    const params = new URLSearchParams(window.location.search);
+    params.delete("book");
+    window.history.pushState({}, "", "?" + params.toString());
   }
 
   // measure the rail track (top/bottom dot positions) whenever a book is open

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState, useEffect, useCallback } from "react";
 
 type SearchOverlayContextValue = {
   isOpen: boolean;
@@ -21,17 +21,51 @@ export function SearchOverlayProvider({
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
 
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      setIsOpen(params.has("search"));
+      setQuery(params.get("q") || "");
+    };
+
+    handlePopState();
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const openOverlay = useCallback((q?: string) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("search", "true");
+    if (q) params.set("q", q);
+    params.delete("book");
+
+    const newUrl = "?" + params.toString();
+    window.history.pushState({}, "", newUrl);
+
+    setIsOpen(true);
+    setQuery(q ?? "");
+  }, []);
+
+  const closeOverlay = useCallback(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.delete("search");
+    params.delete("q");
+    params.delete("book");
+
+    const newUrl = params.toString() ? "?" + params.toString() : window.location.pathname;
+    window.history.pushState({}, "", newUrl);
+
+    setIsOpen(false);
+  }, []);
+
   const value = useMemo(
     () => ({
       isOpen,
       query,
-      openOverlay: (q?: string) => {
-        setQuery(q ?? "");
-        setIsOpen(true);
-      },
-      closeOverlay: () => setIsOpen(false),
+      openOverlay,
+      closeOverlay,
     }),
-    [isOpen, query]
+    [isOpen, query, openOverlay, closeOverlay]
   );
 
   return (
