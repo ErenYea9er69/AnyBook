@@ -1663,7 +1663,7 @@
 .dash-nav-item.is-active svg{ color:var(--gold); }
 .dash-nav-item:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
 
-.dash-content{ flex:1; min-width:0; padding-bottom:110px; }
+.dash-content{ flex:1; min-width:0; }
 
 .dash-empty{
   padding:96px 24px;
@@ -1744,22 +1744,25 @@
 }
 
 @media (max-width:720px){
-  .dash-shell{ flex-direction:column; min-height:calc(100vh - 78px - 64px); }
+  /* dash-shell mobile min-height moved to bottom */
   .dash-tabbar{ bottom:calc(16px + env(safe-area-inset-bottom)); padding:6px; }
   .dash-tabbar .dash-nav-item{ height:42px; }
   .dash-tabbar .dash-nav-item svg{ width:19px; height:19px; }
-  .dash-content{ padding-bottom:96px; }
+  /* dash-content mobile padding removed */
 }
 /* ---------- library panel (append to the end of globals.css) ---------- */
 
 .library-panel{
-  height: calc(100vh - 79px - 110px);
+  height: calc(100vh - 79px);
   overflow-y: auto;
   padding-top: 24px;
+  padding-bottom: 110px;
 }
 
 @media (max-width:720px){
+  .dash-shell{ flex-direction:column; min-height:calc(100vh - 79px); }
   .library-panel{
-    height: calc(100vh - 79px - 96px);
+    height: calc(100vh - 79px);
+    padding-bottom: 96px;
   }
 }
