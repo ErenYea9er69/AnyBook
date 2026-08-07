@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useSearchOverlay } from "@/lib/search-overlay-context";
+import { useAuth } from "@/lib/auth-context";
+import { openAuthModal } from "@/lib/auth-modal";
 
 const TITLES = ["Atomic Habits", "Sapiens", "Meditations", "Educated", "The Odyssey"];
 
 export default function SearchMock() {
   const { openOverlay } = useSearchOverlay();
+  const { user } = useAuth();
   const [text, setText] = useState("");
 
   useEffect(() => {
@@ -52,6 +55,16 @@ export default function SearchMock() {
     return () => clearTimeout(timeoutId);
   }, []);
 
+  // A signed-out visitor never reaches search results. The click opens
+  // the auth modal instead, and the real search opens only after login.
+  function handleActivate() {
+    if (user) {
+      openOverlay(text);
+    } else {
+      openAuthModal("signup");
+    }
+  }
+
   return (
     <div
       className="search-mock"
@@ -59,11 +72,11 @@ export default function SearchMock() {
       role="button"
       tabIndex={0}
       aria-label="Search this title"
-      onClick={() => openOverlay(text)}
+      onClick={handleActivate}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          openOverlay(text);
+          handleActivate();
         }
       }}
     >

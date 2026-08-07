@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
+import { openAuthModal } from "@/lib/auth-modal";
 
 function getInitials(name: string | null | undefined, email: string | null | undefined) {
   if (name) {
@@ -43,13 +44,6 @@ export default function Header() {
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
-
-  const goToAuth = (mode: "login" | "signup") => {
-    const params = new URLSearchParams(window.location.search);
-    params.set("auth", mode);
-    window.history.pushState({}, "", "?" + params.toString());
-    window.dispatchEvent(new Event("popstate"));
-  };
 
   const displayName = user?.displayName || user?.email?.split("@")[0] || "";
 
@@ -103,10 +97,10 @@ export default function Header() {
             </div>
           ) : !loading ? (
             <>
-              <button type="button" className="btn btn-outline btn-sm" onClick={() => goToAuth("login")}>
+              <button type="button" className="btn btn-outline btn-sm" onClick={() => openAuthModal("login")}>
                 Sign In
               </button>
-              <button type="button" className="btn btn-gold btn-sm" onClick={() => goToAuth("signup")}>
+              <button type="button" className="btn btn-gold btn-sm" onClick={() => openAuthModal("signup")}>
                 Sign Up
               </button>
             </>

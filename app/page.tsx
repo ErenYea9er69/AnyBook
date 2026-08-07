@@ -1,52 +1,63 @@
+"use client";
+
 import { SearchOverlayProvider } from "@/lib/search-overlay-context";
-import { AuthProvider } from "@/lib/auth-context";
-import { OnboardingProvider } from "@/lib/onboarding-context";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
 import Header from "@/components/Header";
 import SearchOverlay from "@/components/SearchOverlay";
 import AuthModal from "@/components/AuthModal";
-import OnboardingModal from "@/components/OnboardingModal";
-import ProfileOverlay from "@/components/ProfileOverlay";
-import Hero from "@/components/Hero";
-import DailyChallenge from "@/components/DailyChallenge";
-import Mission from "@/components/Mission";
-import HowItWorks from "@/components/HowItWorks";
-import Features from "@/components/Features";
-import Formats from "@/components/Formats";
-import RequestSection from "@/components/RequestSection";
-import Quotes from "@/components/Quotes";
-import FAQ from "@/components/FAQ";
-import FinalCTA from "@/components/FinalCTA";
+import LandingView from "@/components/LandingView";
+import AppShell from "@/components/AppShell";
 import Footer from "@/components/Footer";
+
+// Reads auth state and picks the view. Split from Home() below because
+// useAuth only works inside AuthProvider, and Home() is what renders
+// AuthProvider in the first place.
+function HomeContent() {
+  const { user, loading } = useAuth();
+
+  // While Firebase resolves the session, show a quiet loader rather
+  // than the landing page, so a signed-in user never sees a flash of
+  // marketing content before the dashboard takes over.
+  if (loading) {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        aria-label="Loading"
+      >
+        <span className="spinner" />
+      </main>
+    );
+  }
+
+  if (user) {
+    return <AppShell />;
+  }
+
+  return (
+    <>
+      <LandingView />
+      <Footer />
+    </>
+  );
+}
 
 export default function Home() {
   return (
     <AuthProvider>
-      <OnboardingProvider>
-        <SearchOverlayProvider>
-          <div className="grain"></div>
+      <SearchOverlayProvider>
+        <div className="grain"></div>
 
-          <Header />
-          <SearchOverlay />
-          <AuthModal />
-          <OnboardingModal />
-          <ProfileOverlay />
+        <Header />
+        <SearchOverlay />
+        <AuthModal />
 
-          <main>
-            <Hero />
-            <DailyChallenge />
-            <Mission />
-            <HowItWorks />
-            <Features />
-            <Formats />
-            <RequestSection />
-            <Quotes />
-            <FAQ />
-            <FinalCTA />
-          </main>
-
-          <Footer />
-        </SearchOverlayProvider>
-      </OnboardingProvider>
+        <HomeContent />
+      </SearchOverlayProvider>
     </AuthProvider>
   );
 }
