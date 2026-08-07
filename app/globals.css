@@ -468,7 +468,7 @@
   }
   .overlay-top{ 
     display:flex; align-items:center; gap:16px; 
-    position:sticky; top:-10px; z-index:100;
+    position:sticky; top:0; z-index:10;
   }
   .header-search.big{
     flex:1; padding:16px 20px; overflow:hidden;
