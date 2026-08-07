@@ -1694,18 +1694,38 @@
 @media (max-width:720px){
   .dash-shell{ flex-direction:column; min-height:calc(100vh - 78px - 64px); }
   .dash-sidebar{ display:none; }
+
   .dash-tabbar{
-    display:flex; justify-content:space-between;
-    position:fixed; left:0; right:0; bottom:0; z-index:300;
+    display:flex; align-items:center; justify-content:center; gap:4px;
+    position:fixed; left:50%; bottom:calc(16px + env(safe-area-inset-bottom));
+    transform:translateX(-50%); z-index:300;
+    width:max-content; max-width:calc(100% - 32px);
     background:rgba(4,8,7,0.92); backdrop-filter:blur(10px);
-    border-top:1px solid rgba(199,160,90,0.16);
-    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+    border:1px solid rgba(199,160,90,0.16);
+    border-radius:999px;
+    padding:6px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
   }
+
+  /* icon-only pill buttons: labels are dropped, each tab becomes a circle */
   .dash-tabbar .dash-nav-item{
-    flex:1; flex-direction:column; align-items:center; gap:4px;
-    padding:6px 4px; font-size:10.5px; text-align:center;
+    flex:0 0 auto; flex-direction:column; align-items:center; justify-content:center;
+    width:42px; height:42px; padding:0; border-radius:50%;
+    gap:0;
   }
-  .dash-content{ padding-bottom:76px; }
+  .dash-tabbar .dash-nav-item span{
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip:rect(0 0 0 0); white-space:nowrap;
+  }
+  .dash-tabbar .dash-nav-item svg{ width:19px; height:19px; }
+
+  .dash-tabbar .dash-nav-item:hover{ background:rgba(199,160,90,0.1); }
+  .dash-tabbar .dash-nav-item.is-active{
+    background:var(--paper); color:var(--ink-deep);
+  }
+  .dash-tabbar .dash-nav-item.is-active svg{ color:var(--ink-deep); }
+
+  .dash-content{ padding-bottom:96px; }
 }
 /* ---------- library panel (append to the end of globals.css) ---------- */
 
