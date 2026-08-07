@@ -1753,14 +1753,13 @@
 /* ---------- library panel (append to the end of globals.css) ---------- */
 
 .library-panel{
-  height: calc(100vh - 78px - 96px);
+  height: calc(100vh - 78px - 110px);
   overflow-y: auto;
   padding-top: 24px;
 }
 
-
 @media (max-width:720px){
   .library-panel{
-    height: calc(100vh - 78px - 64px);
+    height: calc(100vh - 78px - 96px);
   }
 }
