@@ -1755,6 +1755,7 @@
 .library-panel{
   height: calc(100vh - 78px - 96px);
   overflow-y: auto;
+  padding-top: 24px;
 }
 
 
