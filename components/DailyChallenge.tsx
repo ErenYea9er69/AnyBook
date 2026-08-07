@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { useSearchOverlay } from "@/lib/search-overlay-context";
+import { useDashboard } from "@/lib/dashboard-context";
 import { fetchAllBooks } from "@/lib/books";
 import { ANGLE_DEFS } from "@/lib/angles";
 import {
@@ -14,7 +14,7 @@ import {
 
 export default function DailyChallenge() {
   const { user } = useAuth();
-  const { openOverlay } = useSearchOverlay();
+  const { setActiveTab } = useDashboard();
   const [challenge, setChallenge] = useState<{
     bookId: string;
     bookTitle: string;
@@ -59,7 +59,10 @@ export default function DailyChallenge() {
       angleLabel: challenge.angleLabel,
     });
     setDone(true);
-    openOverlay(challenge.bookTitle);
+    const params = new URLSearchParams(window.location.search);
+    params.set("book", challenge.bookId);
+    window.history.pushState({}, "", "?" + params.toString());
+    setActiveTab("library");
   };
 
   return (

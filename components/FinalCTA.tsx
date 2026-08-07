@@ -1,10 +1,9 @@
 "use client";
 
-import { useSearchOverlay } from "@/lib/search-overlay-context";
+import { openAuthModal } from "@/lib/auth-modal";
 import Reveal from "./Reveal";
 
 export default function FinalCTA() {
-  const { openOverlay } = useSearchOverlay();
 
   return (
     <section className="final-cta">
@@ -24,7 +23,7 @@ export default function FinalCTA() {
           href="#"
           onClick={(e: React.MouseEvent) => {
             e.preventDefault();
-            openOverlay("");
+            openAuthModal("signup");
           }}
         >
           Search a book

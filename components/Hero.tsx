@@ -1,11 +1,10 @@
 "use client";
 
-import { useSearchOverlay } from "@/lib/search-overlay-context";
+import { openAuthModal } from "@/lib/auth-modal";
 import Bookshelf from "./Bookshelf";
 import SearchMock from "./SearchMock";
 
 export default function Hero() {
-  const { openOverlay } = useSearchOverlay();
 
   return (
     <section className="hero">
@@ -31,7 +30,7 @@ export default function Hero() {
               className="btn btn-gold"
               onClick={(e) => {
                 e.preventDefault();
-                openOverlay("");
+                openAuthModal("signup");
               }}
             >
               Search a book
