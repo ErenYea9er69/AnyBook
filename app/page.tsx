@@ -1,9 +1,7 @@
 "use client";
 
-import { SearchOverlayProvider } from "@/lib/search-overlay-context";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import Header from "@/components/Header";
-import SearchOverlay from "@/components/SearchOverlay";
 import AuthModal from "@/components/AuthModal";
 import LandingView from "@/components/LandingView";
 import AppShell from "@/components/AppShell";
@@ -15,9 +13,6 @@ import Footer from "@/components/Footer";
 function HomeContent() {
   const { user, loading } = useAuth();
 
-  // While Firebase resolves the session, show a quiet loader rather
-  // than the landing page, so a signed-in user never sees a flash of
-  // marketing content before the dashboard takes over.
   if (loading) {
     return (
       <main
@@ -49,15 +44,12 @@ function HomeContent() {
 export default function Home() {
   return (
     <AuthProvider>
-      <SearchOverlayProvider>
-        <div className="grain"></div>
+      <div className="grain"></div>
 
-        <Header />
-        <SearchOverlay />
-        <AuthModal />
+      <Header />
+      <AuthModal />
 
-        <HomeContent />
-      </SearchOverlayProvider>
+      <HomeContent />
     </AuthProvider>
   );
 }

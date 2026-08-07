@@ -1707,3 +1707,15 @@
   }
   .dash-content{ padding-bottom:76px; }
 }
+/* ---------- library panel (append to the end of globals.css) ---------- */
+
+.library-panel{
+  height: calc(100vh - 78px);
+  overflow-y: auto;
+}
+
+@media (max-width:720px){
+  .library-panel{
+    height: calc(100vh - 78px - 64px);
+  }
+}

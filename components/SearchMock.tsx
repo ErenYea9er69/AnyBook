@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchOverlay } from "@/lib/search-overlay-context";
-import { useAuth } from "@/lib/auth-context";
 import { openAuthModal } from "@/lib/auth-modal";
 
 const TITLES = ["Atomic Habits", "Sapiens", "Meditations", "Educated", "The Odyssey"];
 
+// This only ever renders on the landing page, which only ever renders for
+// a signed-out visitor (see page.tsx). Every click here means sign up,
+// full stop, no auth check needed.
 export default function SearchMock() {
-  const { openOverlay } = useSearchOverlay();
-  const { user } = useAuth();
   const [text, setText] = useState("");
 
   useEffect(() => {
@@ -55,14 +54,8 @@ export default function SearchMock() {
     return () => clearTimeout(timeoutId);
   }, []);
 
-  // A signed-out visitor never reaches search results. The click opens
-  // the auth modal instead, and the real search opens only after login.
   function handleActivate() {
-    if (user) {
-      openOverlay(text);
-    } else {
-      openAuthModal("signup");
-    }
+    openAuthModal("signup");
   }
 
   return (

@@ -1,60 +1,90 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
+import { DashboardProvider, useDashboard } from "@/lib/dashboard-context";
+import DashboardNav from "@/components/DashboardNav";
+import LibraryPanel from "@/components/LibraryPanel";
 
-// The dashboard content for signed-in users. This is a placeholder for
-// step 1. Step 3 replaces this body with the real tab nav (Today,
-// Library, Shelf, Progress, Profile) and their sections.
-export default function AppShell() {
+function EmptyPanel({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="dash-empty">
+      <span className="eyebrow">{eyebrow}</span>
+      <h2>{title}</h2>
+      <p>{description}</p>
+    </div>
+  );
+}
+
+function TodayPanel() {
   const { user } = useAuth();
   const rawName = user?.displayName || user?.email?.split("@")[0] || "reader";
   const firstName = rawName.split(" ")[0];
 
   return (
-    <main
-      style={{
-        minHeight: "70vh",
-        padding: "96px 24px 64px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "14px",
-        textAlign: "center",
-      }}
-    >
-      <span
-        style={{
-          fontFamily: "var(--sans)",
-          fontSize: "13px",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          color: "var(--on-paper-dim)",
-        }}
-      >
-        Welcome back
-      </span>
-      <h1
-        style={{
-          fontFamily: "var(--serif)",
-          fontSize: "clamp(28px, 4vw, 42px)",
-          color: "var(--on-paper)",
-          margin: 0,
-        }}
-      >
-        Good to see you, {firstName}.
-      </h1>
-      <p
-        style={{
-          fontFamily: "var(--sans)",
-          color: "var(--on-paper-dim)",
-          maxWidth: "480px",
-          margin: 0,
-          lineHeight: 1.6,
-        }}
-      >
-        The dashboard is under construction. The daily chapter, your streak grid,
-        your shelf, and your badges land here next.
-      </p>
-    </main>
+    <EmptyPanel
+      eyebrow="Welcome back"
+      title={`Good to see you, ${firstName}.`}
+      description="Your one chapter for today lands here next, one clear task and a five-minute read."
+    />
   );
 }
+
+// Picks the right panel for the active tab. Today gets a real greeting
+// already; the other four are placeholders until their build steps.
+function ActivePanel() {
+  const { activeTab } = useDashboard();
+
+  switch (activeTab) {
+    case "today":
+      return <TodayPanel />;
+    case "library":
+      return <LibraryPanel />;
+    case "shelf":
+      return (
+        <EmptyPanel
+          eyebrow="Shelf"
+          title="Your saved and finished books"
+          description="Mark a book read or save it for later, and it shows up on this shelf."
+        />
+      );
+    case "progress":
+      return (
+        <EmptyPanel
+          eyebrow="Progress"
+          title="Your streak grid lands here"
+          description="A full year of squares, your current streak, and your weekly goal."
+        />
+      );
+    case "profile":
+      return (
+        <EmptyPanel
+          eyebrow="Profile"
+          title="Badges and milestones"
+          description="Every milestone you clear shows up here, starting with your first finished book."
+        />
+      );
+    default:
+      return null;
+  }
+}
+
+export default function AppShell() {
+  return (
+    <DashboardProvider>
+      <div className="dash-shell">
+        <DashboardNav />
+        <div className="dash-content">
+          <ActivePanel />
+        </div>
+      </div>
+    </DashboardProvider>
+  );
+}   
