@@ -1639,3 +1639,71 @@
     width: 72px;
   }
 }
+/* ---------- dashboard shell (append to the end of globals.css) ---------- */
+
+.dash-shell{
+  display:flex;
+  align-items:flex-start;
+  min-height:calc(100vh - 78px);
+}
+
+.dash-sidebar{
+  position:sticky; top:78px;
+  width:220px; flex-shrink:0;
+  height:calc(100vh - 78px);
+  border-right:1px solid rgba(199,160,90,0.16);
+  padding:28px 14px;
+  display:flex; flex-direction:column; gap:4px;
+}
+
+.dash-nav-item{
+  display:flex; align-items:center; gap:12px;
+  width:100%; text-align:left;
+  padding:11px 14px; border-radius:var(--radius);
+  font-family:var(--sans); font-size:14px; font-weight:600;
+  color:var(--on-ink-dim);
+  transition:background 0.2s ease, color 0.2s ease;
+}
+.dash-nav-item:hover{ background:rgba(199,160,90,0.08); color:var(--on-ink); }
+.dash-nav-item.is-active{ background:rgba(199,160,90,0.14); color:var(--on-ink); }
+.dash-nav-item.is-active svg{ color:var(--gold); }
+.dash-nav-item:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+.dash-content{ flex:1; min-width:0; }
+
+.dash-empty{
+  padding:96px 24px;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  text-align:center;
+}
+.dash-empty .eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--gold);
+}
+.dash-empty h2{
+  font-family:var(--serif); font-size:clamp(24px,3vw,32px);
+  color:var(--on-ink); margin:0;
+}
+.dash-empty p{
+  font-family:var(--sans); color:var(--on-ink-dim);
+  max-width:440px; margin:0; line-height:1.6;
+}
+
+.dash-tabbar{ display:none; }
+
+@media (max-width:720px){
+  .dash-shell{ flex-direction:column; min-height:calc(100vh - 78px - 64px); }
+  .dash-sidebar{ display:none; }
+  .dash-tabbar{
+    display:flex; justify-content:space-between;
+    position:fixed; left:0; right:0; bottom:0; z-index:300;
+    background:rgba(4,8,7,0.92); backdrop-filter:blur(10px);
+    border-top:1px solid rgba(199,160,90,0.16);
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  }
+  .dash-tabbar .dash-nav-item{
+    flex:1; flex-direction:column; align-items:center; gap:4px;
+    padding:6px 4px; font-size:10.5px; text-align:center;
+  }
+  .dash-content{ padding-bottom:76px; }
+}
