@@ -1,9 +1,13 @@
 import { SearchOverlayProvider } from "@/lib/search-overlay-context";
 import { AuthProvider } from "@/lib/auth-context";
+import { OnboardingProvider } from "@/lib/onboarding-context";
 import Header from "@/components/Header";
 import SearchOverlay from "@/components/SearchOverlay";
 import AuthModal from "@/components/AuthModal";
+import OnboardingModal from "@/components/OnboardingModal";
+import ProfileOverlay from "@/components/ProfileOverlay";
 import Hero from "@/components/Hero";
+import DailyChallenge from "@/components/DailyChallenge";
 import Mission from "@/components/Mission";
 import HowItWorks from "@/components/HowItWorks";
 import Features from "@/components/Features";
@@ -17,27 +21,32 @@ import Footer from "@/components/Footer";
 export default function Home() {
   return (
     <AuthProvider>
-      <SearchOverlayProvider>
-        <div className="grain"></div>
+      <OnboardingProvider>
+        <SearchOverlayProvider>
+          <div className="grain"></div>
 
-      <Header />
-      <SearchOverlay />
-      <AuthModal />
+          <Header />
+          <SearchOverlay />
+          <AuthModal />
+          <OnboardingModal />
+          <ProfileOverlay />
 
-      <main>
-        <Hero />
-        <Mission />
-        <HowItWorks />
-        <Features />
-        <Formats />
-        <RequestSection />
-        <Quotes />
-        <FAQ />
-        <FinalCTA />
-      </main>
+          <main>
+            <Hero />
+            <DailyChallenge />
+            <Mission />
+            <HowItWorks />
+            <Features />
+            <Formats />
+            <RequestSection />
+            <Quotes />
+            <FAQ />
+            <FinalCTA />
+          </main>
 
-        <Footer />
-      </SearchOverlayProvider>
+          <Footer />
+        </SearchOverlayProvider>
+      </OnboardingProvider>
     </AuthProvider>
   );
 }
