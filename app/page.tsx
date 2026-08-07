@@ -1,4 +1,5 @@
 import { SearchOverlayProvider } from "@/lib/search-overlay-context";
+import { AuthProvider } from "@/lib/auth-context";
 import Header from "@/components/Header";
 import SearchOverlay from "@/components/SearchOverlay";
 import AuthModal from "@/components/AuthModal";
@@ -15,8 +16,9 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <SearchOverlayProvider>
-      <div className="grain"></div>
+    <AuthProvider>
+      <SearchOverlayProvider>
+        <div className="grain"></div>
 
       <Header />
       <SearchOverlay />
@@ -34,7 +36,8 @@ export default function Home() {
         <FinalCTA />
       </main>
 
-      <Footer />
-    </SearchOverlayProvider>
+        <Footer />
+      </SearchOverlayProvider>
+    </AuthProvider>
   );
 }
