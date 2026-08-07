@@ -1644,7 +1644,7 @@
 .dash-shell{
   display:flex;
   align-items:flex-start;
-  min-height:calc(100vh - 78px);
+  min-height:calc(100vh - 79px);
 }
 
 /* sidebar retired in favor of the floating bottom pill on every screen size */
@@ -1753,13 +1753,13 @@
 /* ---------- library panel (append to the end of globals.css) ---------- */
 
 .library-panel{
-  height: calc(100vh - 78px - 110px);
+  height: calc(100vh - 79px - 110px);
   overflow-y: auto;
   padding-top: 24px;
 }
 
 @media (max-width:720px){
   .library-panel{
-    height: calc(100vh - 78px - 96px);
+    height: calc(100vh - 79px - 96px);
   }
 }
