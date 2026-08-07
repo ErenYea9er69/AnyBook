@@ -1703,6 +1703,7 @@
    so selecting a new tab automatically collapses whichever was open. */
 .dash-tabbar .dash-nav-item{
   flex:0 0 auto; flex-direction:row; align-items:center; justify-content:center;
+  width:auto; text-align:center;
   height:44px; padding:0 12px; border-radius:999px;
   gap:0; overflow:hidden;
   border:1px solid transparent;
