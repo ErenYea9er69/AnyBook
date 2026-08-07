@@ -16,6 +16,8 @@ export default function AuthModal() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [shake, setShake] = useState(false);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -45,21 +47,27 @@ export default function AuthModal() {
     const newUrl = params.toString() ? "?" + params.toString() : window.location.pathname;
     window.history.pushState({}, "", newUrl);
     window.dispatchEvent(new Event("popstate"));
-    
-    // Reset state
+
     setEmail("");
     setPassword("");
     setName("");
     setError("");
+    setShowPassword(false);
   };
 
-  const toggleMode = () => {
-    const nextMode = authMode === "login" ? "signup" : "login";
+  const switchTo = (mode: "login" | "signup") => {
+    if (mode === authMode) return;
     const params = new URLSearchParams(window.location.search);
-    params.set("auth", nextMode);
+    params.set("auth", mode);
     window.history.pushState({}, "", "?" + params.toString());
     window.dispatchEvent(new Event("popstate"));
     setError("");
+  };
+
+  const triggerShake = (message: string) => {
+    setError(message);
+    setShake(true);
+    setTimeout(() => setShake(false), 400);
   };
 
   const handleGoogleSignIn = async () => {
@@ -69,7 +77,7 @@ export default function AuthModal() {
       await signInWithPopup(auth, googleProvider);
       closeOverlay();
     } catch (err: any) {
-      setError(err.message);
+      triggerShake(err.message);
     } finally {
       setLoading(false);
     }
@@ -91,7 +99,7 @@ export default function AuthModal() {
       }
       closeOverlay();
     } catch (err: any) {
-      setError(err.message);
+      triggerShake(err.message);
     } finally {
       setLoading(false);
     }
@@ -100,9 +108,9 @@ export default function AuthModal() {
   return (
     <div className="auth-overlay">
       <div className="auth-overlay-backdrop" onClick={closeOverlay} />
-      <div className="auth-modal">
+      <div className={`auth-modal${shake ? " shake" : ""}`}>
         <button className="auth-close" onClick={closeOverlay} aria-label="Close">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <line x1="6" y1="6" x2="18" y2="18" />
             <line x1="18" y1="6" x2="6" y2="18" />
           </svg>
@@ -114,6 +122,16 @@ export default function AuthModal() {
               ? "Sign in to access your saved books and highlights."
               : "Join AnyBook to save your favorite summaries."}
           </p>
+
+          <div className="auth-tabs" data-mode={authMode}>
+            <div className="tab-indicator" />
+            <button type="button" className={authMode === "login" ? "active" : ""} onClick={() => switchTo("login")}>
+              Sign In
+            </button>
+            <button type="button" className={authMode === "signup" ? "active" : ""} onClick={() => switchTo("signup")}>
+              Sign Up
+            </button>
+          </div>
 
           <button type="button" className="btn btn-google" onClick={handleGoogleSignIn} disabled={loading}>
             <svg viewBox="0 0 48 48" width="20" height="20">
@@ -133,27 +151,79 @@ export default function AuthModal() {
           <form className="auth-form" onSubmit={handleSubmit}>
             {authMode === "signup" && (
               <div className="form-group">
-                <label htmlFor="auth-name">Full Name</label>
-                <input type="text" id="auth-name" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} disabled={loading} />
+                <input
+                  type="text"
+                  id="auth-name"
+                  placeholder=" "
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={loading}
+                />
+                <label htmlFor="auth-name">Full name</label>
               </div>
             )}
             <div className="form-group">
+              <input
+                type="email"
+                id="auth-email"
+                placeholder=" "
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+              />
               <label htmlFor="auth-email">Email</label>
-              <input type="email" id="auth-email" placeholder="john@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} />
             </div>
             <div className="form-group">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="auth-password"
+                placeholder=" "
+                required
+                className="has-toggle"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+              />
               <label htmlFor="auth-password">Password</label>
-              <input type="password" id="auth-password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} />
+              <button
+                type="button"
+                className="pw-toggle"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M3 3l18 18" />
+                    <path d="M10.6 10.6a2 2 0 0 0 2.83 2.83" />
+                    <path d="M9.4 5.5A9.9 9.9 0 0 1 12 5c5 0 9 4 10 7-0.4 1.1-1.1 2.3-2.1 3.4M6.2 6.2C4.3 7.5 2.9 9.3 2 12c1 3 5 7 10 7 1.2 0 2.4-.2 3.5-.6" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
             </div>
-            {error && <div style={{ color: '#EA4335', fontSize: '13px', marginTop: '4px' }}>{error}</div>}
+            {error && (
+              <div className="auth-error">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="13" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                {error}
+              </div>
+            )}
             <button type="submit" className="btn btn-gold auth-submit" disabled={loading}>
-              {loading ? "Please wait..." : authMode === "login" ? "Sign In" : "Sign Up"}
+              {loading ? <span className="spinner" /> : authMode === "login" ? "Sign In" : "Sign Up"}
             </button>
           </form>
 
           <div className="auth-switch">
             {authMode === "login" ? "Don't have an account? " : "Already have an account? "}
-            <button type="button" onClick={toggleMode}>
+            <button type="button" onClick={() => switchTo(authMode === "login" ? "signup" : "login")}>
               {authMode === "login" ? "Sign up" : "Sign in"}
             </button>
           </div>
