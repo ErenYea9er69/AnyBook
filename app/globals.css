@@ -132,6 +132,20 @@
     transition:color 0.2s ease; position:relative;
   }
   nav.links a:hover{ color:var(--on-ink); }
+  
+  nav.links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0%;
+    height: 1px;
+    background-color: var(--gold);
+    transition: width 0.2s ease;
+  }
+  nav.links a:hover::after {
+    width: 100%;
+  }
 
   .btn{
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
