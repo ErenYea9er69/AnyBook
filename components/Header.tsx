@@ -1,11 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useSearchOverlay } from "@/lib/search-overlay-context";
+import { useEffect, useRef } from "react";
 
 export default function Header() {
-  const { openOverlay } = useSearchOverlay();
-  const [value, setValue] = useState("");
   const navRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -35,36 +32,32 @@ export default function Header() {
           <a href="#request">Request a book</a>
           <a href="#faq">FAQ</a>
         </nav>
-        <form
-          className="header-search"
-          id="headerSearchForm"
-          onSubmit={(e) => {
-            e.preventDefault();
-            openOverlay(value);
-          }}
-        >
-          <button type="submit" className="search-icon-btn" aria-label="Search">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
+        <div style={{ display: 'flex', gap: '12px', marginLeft: '16px' }}>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => {
+              const params = new URLSearchParams(window.location.search);
+              params.set("auth", "login");
+              window.history.pushState({}, "", "?" + params.toString());
+              window.dispatchEvent(new Event("popstate"));
+            }}
+          >
+            Sign In
           </button>
-          <input
-            type="text"
-            id="headerSearchInput"
-            placeholder="Search the library"
-            autoComplete="off"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-          />
-        </form>
+          <button
+            type="button"
+            className="btn btn-gold btn-sm"
+            onClick={() => {
+              const params = new URLSearchParams(window.location.search);
+              params.set("auth", "signup");
+              window.history.pushState({}, "", "?" + params.toString());
+              window.dispatchEvent(new Event("popstate"));
+            }}
+          >
+            Sign Up
+          </button>
+        </div>
       </div>
     </header>
   );
