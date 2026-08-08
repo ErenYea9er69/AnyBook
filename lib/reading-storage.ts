@@ -175,6 +175,15 @@ export function isBookRead(uid: string, bookId: string): boolean {
 
 /* -------------------------------- writes -------------------------------- */
 
+export function removeBookAsRead(uid: string, bookId: string): void {
+  const state = getReadingState(uid);
+  const idx = state.completedBookIds.indexOf(bookId);
+  if (idx > -1) {
+    state.completedBookIds.splice(idx, 1);
+    setReadingState(uid, state);
+  }
+}
+
 export function toggleSavedBook(uid: string, bookId: string): string[] {
   const state = getReadingState(uid);
   const idx = state.savedBookIds.indexOf(bookId);

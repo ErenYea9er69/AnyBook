@@ -10,6 +10,7 @@ import {
   isBookSaved,
   logReadingActivity,
   toggleSavedBook,
+  removeBookAsRead,
 } from "@/lib/reading-storage";
 
 // A book's category string looks like "Nonfiction · Business" or just
@@ -228,15 +229,21 @@ export default function LibraryPanel() {
   }, [justUnlocked]);
 
   function handleMarkRead() {
-    if (!user || !selectedBook || isRead) return;
-    const { newlyUnlocked } = logReadingActivity(user.uid, {
-      bookId: selectedBook.id,
-      genre: extractGenre(selectedBook),
-      completeBook: true,
-    });
-    setIsRead(true);
-    if (newlyUnlocked.length > 0) {
-      setJustUnlocked(newlyUnlocked.map((b) => BADGE_INFO[b.id].label));
+    if (!user || !selectedBook) return;
+    
+    if (isRead) {
+      removeBookAsRead(user.uid, selectedBook.id);
+      setIsRead(false);
+    } else {
+      const { newlyUnlocked } = logReadingActivity(user.uid, {
+        bookId: selectedBook.id,
+        genre: extractGenre(selectedBook),
+        completeBook: true,
+      });
+      setIsRead(true);
+      if (newlyUnlocked.length > 0) {
+        setJustUnlocked(newlyUnlocked.map((b) => BADGE_INFO[b.id].label));
+      }
     }
   }
 
@@ -572,9 +579,8 @@ export default function LibraryPanel() {
                       type="button"
                       className={`icon-action-btn${isRead ? " is-active" : ""}`}
                       onClick={handleMarkRead}
-                      disabled={isRead}
-                      aria-label={isRead ? "Marked as read" : "Mark as read"}
-                      title={isRead ? "Marked as read" : "Mark as read"}
+                      aria-label={isRead ? "Unmark as read" : "Mark as read"}
+                      title={isRead ? "Unmark as read" : "Mark as read"}
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="9" />
