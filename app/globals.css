@@ -1796,3 +1796,48 @@
   font-family:var(--sans); font-size:13.5px; font-weight:600;
   color:var(--gold-bright);
 }
+/* ---------- today panel (append to the end of globals.css) ---------- */
+
+.today-panel{ padding:64px 40px 48px; }
+
+.today-panel .eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--gold);
+}
+
+.today-greeting{
+  font-family:var(--serif); font-size:clamp(26px,3vw,34px);
+  color:var(--on-ink); margin:6px 0 32px;
+}
+
+.challenge-card{
+  display:flex; gap:24px; align-items:center;
+  max-width:560px;
+  padding:28px; border-radius:14px;
+  border:1px solid rgba(199,160,90,0.2);
+  background:rgba(199,160,90,0.05);
+}
+
+.challenge-body{ display:flex; flex-direction:column; gap:6px; }
+
+.challenge-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--gold);
+}
+
+.challenge-body h3{
+  font-family:var(--serif); font-size:22px; color:var(--on-ink); margin:0;
+}
+
+.challenge-body p{
+  font-family:var(--sans); font-size:14px; color:var(--on-ink-dim); margin:0 0 8px;
+}
+
+.today-empty{
+  font-family:var(--sans); color:var(--on-ink-dim); max-width:420px;
+}
+
+@media (max-width:520px){
+  .today-panel{ padding:48px 20px 40px; }
+  .challenge-card{ flex-direction:column; align-items:flex-start; }
+}

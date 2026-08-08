@@ -69,7 +69,7 @@ function dateKey(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-function todayKey(): string {
+export function todayKey(): string {
   return dateKey(new Date());
 }
 

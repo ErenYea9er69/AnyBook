@@ -1,8 +1,9 @@
 "use client";
 
-import { useAuth } from "@/lib/auth-context";
 import { DashboardProvider, useDashboard } from "@/lib/dashboard-context";
 import DashboardNav from "@/components/DashboardNav";
+import LibraryPanel from "@/components/LibraryPanel";
+import TodayPanel from "@/components/TodayPanel";
 
 function EmptyPanel({
   eyebrow,
@@ -22,20 +23,6 @@ function EmptyPanel({
   );
 }
 
-function TodayPanel() {
-  const { user } = useAuth();
-  const rawName = user?.displayName || user?.email?.split("@")[0] || "reader";
-  const firstName = rawName.split(" ")[0];
-
-  return (
-    <EmptyPanel
-      eyebrow="Welcome back"
-      title={`Good to see you, ${firstName}.`}
-      description="Your one chapter for today lands here next, one clear task and a five-minute read."
-    />
-  );
-}
-
 // Picks the right panel for the active tab. Today gets a real greeting
 // already; the other four are placeholders until their build steps.
 function ActivePanel() {
@@ -45,13 +32,7 @@ function ActivePanel() {
     case "today":
       return <TodayPanel />;
     case "library":
-      return (
-        <EmptyPanel
-          eyebrow="Library"
-          title="Search moves in here next"
-          description="Your book search and the six-angle reading view take over this tab next."
-        />
-      );
+      return <LibraryPanel />;
     case "shelf":
       return (
         <EmptyPanel
