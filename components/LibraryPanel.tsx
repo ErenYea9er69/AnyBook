@@ -567,6 +567,37 @@ export default function LibraryPanel() {
                     <span>{ANGLE_DEFS.length} angles</span>
                     <span>~{estimateReadMinutes(selectedBook)} min read</span>
                   </div>
+                  <div className="detail-icon-actions">
+                    <button
+                      type="button"
+                      className={`icon-action-btn${isRead ? " is-active" : ""}`}
+                      onClick={handleMarkRead}
+                      disabled={isRead}
+                      aria-label={isRead ? "Marked as read" : "Mark as read"}
+                      title={isRead ? "Marked as read" : "Mark as read"}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="9" />
+                        <polyline points="8 12.5 11 15.5 16 9" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      className={`icon-action-btn${isSaved ? " is-active" : ""}`}
+                      onClick={handleToggleSave}
+                      aria-label={isSaved ? "Saved" : "Save for later"}
+                      title={isSaved ? "Saved" : "Save for later"}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z" />
+                      </svg>
+                    </button>
+                  </div>
+                  {justUnlocked.length > 0 && (
+                    <div className="detail-badge-toast" role="status">
+                      New badge: {justUnlocked.join(", ")}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -598,30 +629,6 @@ export default function LibraryPanel() {
                   </div>
                 ))}
               </div>
-
-              <div className="detail-actions">
-                <button
-                  type="button"
-                  className={`btn ${isRead ? "btn-gold" : "btn-outline"}`}
-                  onClick={handleMarkRead}
-                  disabled={isRead}
-                >
-                  {isRead ? "Marked as read" : "Mark as read"}
-                </button>
-                <button
-                  type="button"
-                  className={`btn ${isSaved ? "btn-gold" : "btn-outline"}`}
-                  onClick={handleToggleSave}
-                >
-                  {isSaved ? "Saved" : "Save for later"}
-                </button>
-              </div>
-
-              {justUnlocked.length > 0 && (
-                <div className="detail-badge-toast" role="status">
-                  New badge: {justUnlocked.join(", ")}
-                </div>
-              )}
             </div>
           </div>
         )}
