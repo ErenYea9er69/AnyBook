@@ -1994,3 +1994,45 @@
   .profile-panel{ padding:48px 20px 48px; }
   .profile-card{ flex-wrap:wrap; }
 }
+/* ---------- book note (append to the end of globals.css) ---------- */
+
+.detail-review{
+  margin-top:40px; padding-top:28px; max-width:520px;
+  border-top:1px solid rgba(199,160,90,0.16);
+}
+
+.detail-review-heading{
+  font-family:var(--serif); font-size:17px; color:var(--on-ink); margin:0 0 12px;
+}
+
+.detail-review-input{
+  width:100%; padding:11px 14px; border-radius:var(--radius);
+  border:1px solid rgba(199,160,90,0.3);
+  background:transparent; color:var(--on-ink);
+  font-family:var(--sans); font-size:14px;
+}
+.detail-review-input::placeholder{ color:var(--on-ink-dim); }
+.detail-review-input:focus{ outline:none; border-color:var(--gold); }
+
+.detail-review-row{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin-top:12px;
+}
+
+.detail-review-toggle{
+  display:flex; align-items:center; gap:8px;
+  font-family:var(--sans); font-size:13px; color:var(--on-ink-dim);
+}
+.detail-review-toggle input{ accent-color:var(--gold); width:15px; height:15px; }
+
+.detail-review-meta{
+  margin-top:10px;
+  font-family:var(--mono); font-size:11px; letter-spacing:0.03em;
+  color:var(--on-ink-dim);
+}
+
+.detail-review-caption{
+  margin-top:14px;
+  font-family:var(--sans); font-size:12px; line-height:1.5;
+  color:var(--on-ink-dim); opacity:0.75;
+}

@@ -10,8 +10,8 @@ import {
   isBookSaved,
   logReadingActivity,
   toggleSavedBook,
-  removeBookAsRead,
 } from "@/lib/reading-storage";
+import { getReview, saveReview, type BookReview } from "@/lib/review-storage";
 
 // A book's category string looks like "Nonfiction · Business" or just
 // "Business". The last segment is the closest thing to a genre, used
@@ -156,6 +156,9 @@ export default function LibraryPanel() {
   const [isRead, setIsRead] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState<string[]>([]);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewIsPublic, setReviewIsPublic] = useState(false);
+  const [savedReview, setSavedReview] = useState<BookReview | null>(null);
 
   const [scrollPct, setScrollPct] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -221,6 +224,31 @@ export default function LibraryPanel() {
     setIsSaved(isBookSaved(user.uid, selectedBook.id));
   }, [selectedBook, user]);
 
+  // Same idea, for the one-line note: load whatever this reader already
+  // wrote for this book, or start blank.
+  useEffect(() => {
+    if (!selectedBook || !user) {
+      setReviewText("");
+      setReviewIsPublic(false);
+      setSavedReview(null);
+      return;
+    }
+    const existing = getReview(user.uid, selectedBook.id);
+    setSavedReview(existing);
+    setReviewText(existing?.text ?? "");
+    setReviewIsPublic(existing?.isPublic ?? false);
+  }, [selectedBook, user]);
+
+  function handleSaveReview() {
+    if (!user || !selectedBook || !reviewText.trim()) return;
+    const review = saveReview(user.uid, selectedBook.id, reviewText.trim(), reviewIsPublic);
+    setSavedReview(review);
+  }
+
+  function formatReviewDate(ts: number): string {
+    return new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+
   // Clear the "new badge" note on its own after a few seconds.
   useEffect(() => {
     if (justUnlocked.length === 0) return;
@@ -229,21 +257,15 @@ export default function LibraryPanel() {
   }, [justUnlocked]);
 
   function handleMarkRead() {
-    if (!user || !selectedBook) return;
-    
-    if (isRead) {
-      removeBookAsRead(user.uid, selectedBook.id);
-      setIsRead(false);
-    } else {
-      const { newlyUnlocked } = logReadingActivity(user.uid, {
-        bookId: selectedBook.id,
-        genre: extractGenre(selectedBook),
-        completeBook: true,
-      });
-      setIsRead(true);
-      if (newlyUnlocked.length > 0) {
-        setJustUnlocked(newlyUnlocked.map((b) => BADGE_INFO[b.id].label));
-      }
+    if (!user || !selectedBook || isRead) return;
+    const { newlyUnlocked } = logReadingActivity(user.uid, {
+      bookId: selectedBook.id,
+      genre: extractGenre(selectedBook),
+      completeBook: true,
+    });
+    setIsRead(true);
+    if (newlyUnlocked.length > 0) {
+      setJustUnlocked(newlyUnlocked.map((b) => BADGE_INFO[b.id].label));
     }
   }
 
@@ -579,8 +601,9 @@ export default function LibraryPanel() {
                       type="button"
                       className={`icon-action-btn${isRead ? " is-active" : ""}`}
                       onClick={handleMarkRead}
-                      aria-label={isRead ? "Unmark as read" : "Mark as read"}
-                      title={isRead ? "Unmark as read" : "Mark as read"}
+                      disabled={isRead}
+                      aria-label={isRead ? "Marked as read" : "Mark as read"}
+                      title={isRead ? "Marked as read" : "Mark as read"}
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="9" />
@@ -634,6 +657,44 @@ export default function LibraryPanel() {
                     <div className="angle-panel">{renderAngleContent(selectedBook, def.key)}</div>
                   </div>
                 ))}
+              </div>
+
+              <div className="detail-review">
+                <h4 className="detail-review-heading">Your note</h4>
+                <input
+                  type="text"
+                  className="detail-review-input"
+                  placeholder="One honest sentence about this book"
+                  maxLength={240}
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                />
+                <div className="detail-review-row">
+                  <label className="detail-review-toggle">
+                    <input
+                      type="checkbox"
+                      checked={reviewIsPublic}
+                      onChange={(e) => setReviewIsPublic(e.target.checked)}
+                    />
+                    <span>Public</span>
+                  </label>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={handleSaveReview}
+                    disabled={!reviewText.trim()}
+                  >
+                    Save note
+                  </button>
+                </div>
+                {savedReview && (
+                  <div className="detail-review-meta">
+                    {savedReview.isPublic ? "Public" : "Private"} · saved {formatReviewDate(savedReview.updatedAt)}
+                  </div>
+                )}
+                <p className="detail-review-caption">
+                  Notes stay on this device for now. A public note reaches other readers once accounts sync to a server.
+                </p>
               </div>
             </div>
           </div>
