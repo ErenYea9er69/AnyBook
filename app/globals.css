@@ -1841,3 +1841,90 @@
   .today-panel{ padding:48px 20px 40px; }
   .challenge-card{ flex-direction:column; align-items:flex-start; }
 }
+/* ---------- progress panel (append to the end of globals.css) ---------- */
+
+.progress-panel{ padding:64px 40px 64px; }
+
+.progress-panel .eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--gold);
+}
+
+.progress-title{
+  font-family:var(--serif); font-size:clamp(26px,3vw,34px);
+  color:var(--on-ink); margin:6px 0 32px;
+}
+
+.progress-stats{
+  display:flex; gap:40px; flex-wrap:wrap;
+  margin-bottom:36px;
+}
+.stat-block{ display:flex; flex-direction:column; gap:4px; }
+.stat-value{
+  font-family:var(--serif); font-size:32px; color:var(--on-ink);
+}
+.stat-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.05em;
+  text-transform:uppercase; color:var(--on-ink-dim);
+}
+
+.streak-grid-outer{
+  overflow-x:auto;
+  padding-bottom:8px;
+  margin-bottom:36px;
+}
+.streak-grid-wrap{ display:inline-flex; flex-direction:column; gap:6px; min-width:100%; }
+.streak-grid-months{ display:flex; gap:3px; }
+.streak-month-label{
+  width:11px; flex-shrink:0;
+  font-family:var(--mono); font-size:10px; color:var(--on-ink-dim);
+  overflow:visible; white-space:nowrap;
+}
+.streak-grid{ display:flex; gap:3px; }
+.streak-column{ display:flex; flex-direction:column; gap:3px; }
+.streak-cell{
+  width:11px; height:11px; border-radius:2px;
+  background:rgba(199,160,90,0.08);
+}
+.streak-cell.is-empty{ background:transparent; }
+.streak-cell.depth-1{ background:rgba(199,160,90,0.32); }
+.streak-cell.depth-2{ background:rgba(199,160,90,0.55); }
+.streak-cell.depth-3{ background:rgba(199,160,90,0.78); }
+.streak-cell.depth-4{ background:var(--gold-bright); }
+
+.progress-row{
+  display:flex; flex-wrap:wrap; gap:48px;
+}
+
+.freeze-note{
+  display:flex; flex-direction:column; gap:4px;
+  font-family:var(--sans); font-size:13.5px; color:var(--on-ink-dim);
+}
+.freeze-count{
+  font-family:var(--serif); font-size:20px; color:var(--on-ink);
+}
+
+.goal-picker{ display:flex; flex-direction:column; gap:8px; }
+.goal-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.05em;
+  text-transform:uppercase; color:var(--on-ink-dim);
+}
+.goal-options{ display:flex; gap:8px; }
+.goal-btn{
+  padding:7px 14px; border-radius:var(--radius);
+  border:1px solid rgba(199,160,90,0.3);
+  font-family:var(--sans); font-size:13px; font-weight:600;
+  color:var(--on-ink-dim);
+  transition:background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.goal-btn:hover{ border-color:var(--gold); color:var(--on-ink); }
+.goal-btn.is-active{
+  background:rgba(199,160,90,0.16); border-color:var(--gold); color:var(--gold-bright);
+}
+.goal-progress{
+  font-family:var(--sans); font-size:13px; color:var(--on-ink-dim);
+}
+
+@media (max-width:520px){
+  .progress-panel{ padding:48px 20px 48px; }
+}

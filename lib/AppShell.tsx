@@ -4,6 +4,7 @@ import { DashboardProvider, useDashboard } from "@/lib/dashboard-context";
 import DashboardNav from "@/components/DashboardNav";
 import LibraryPanel from "@/components/LibraryPanel";
 import TodayPanel from "@/components/TodayPanel";
+import ProgressPanel from "@/components/ProgressPanel";
 
 function EmptyPanel({
   eyebrow,
@@ -42,13 +43,7 @@ function ActivePanel() {
         />
       );
     case "progress":
-      return (
-        <EmptyPanel
-          eyebrow="Progress"
-          title="Your streak grid lands here"
-          description="A full year of squares, your current streak, and your weekly goal."
-        />
-      );
+      return <ProgressPanel />;
     case "profile":
       return (
         <EmptyPanel

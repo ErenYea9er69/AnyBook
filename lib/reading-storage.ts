@@ -49,7 +49,7 @@ export const BADGE_INFO: Record<BadgeId, { label: string; description: string }>
   "genres-5": { label: "Wide reader", description: "Explore five different genres." },
 };
 
-const MONTHLY_FREEZE_ALLOWANCE = 3;
+export const MONTHLY_FREEZE_ALLOWANCE = 3;
 
 const BADGE_DEFS: { id: BadgeId; isEarned: (state: ReadingState) => boolean }[] = [
   { id: "books-1", isEarned: (s) => s.completedBookIds.length >= 1 },
@@ -65,7 +65,7 @@ function pad(n: number): string {
   return String(n).padStart(2, "0");
 }
 
-function dateKey(d: Date): string {
+export function dateKey(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
