@@ -1766,3 +1766,16 @@
     padding-bottom: 96px;
   }
 }
+/* ---------- detail actions (append to the end of globals.css) ---------- */
+
+.detail-actions{
+  display:flex; flex-wrap:wrap; gap:12px;
+  margin-top:40px; padding-top:28px;
+  border-top:1px solid rgba(199,160,90,0.16);
+}
+
+.detail-badge-toast{
+  margin-top:14px;
+  font-family:var(--sans); font-size:13.5px; font-weight:600;
+  color:var(--gold-bright);
+}

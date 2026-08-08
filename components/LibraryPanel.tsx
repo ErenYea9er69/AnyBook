@@ -3,6 +3,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchAllBooks, type Book } from "@/lib/books";
 import { ANGLE_DEFS, ANGLE_ICONS, estimateReadMinutes, type AngleKey } from "@/lib/angles";
+import { useAuth } from "@/lib/auth-context";
+import {
+  BADGE_INFO,
+  isBookRead,
+  isBookSaved,
+  logReadingActivity,
+  toggleSavedBook,
+} from "@/lib/reading-storage";
+
+// A book's category string looks like "Nonfiction · Business" or just
+// "Business". The last segment is the closest thing to a genre, used
+// for the "five genres explored" badge.
+function extractGenre(book: Book): string | undefined {
+  const parts = book.category.split("·").map((p) => p.trim()).filter(Boolean);
+  return parts[parts.length - 1] || undefined;
+}
 
 const KNOWN_PREFIXES = [
   "Core Thesis", "Placement in Arc", "Detailed Argument Reconstruction",
@@ -132,9 +148,13 @@ function renderAngleContent(book: Book, key: AngleKey) {
 // keeps its own scroll container so the angle rail and progress bar work
 // exactly as they did before.
 export default function LibraryPanel() {
+  const { user } = useAuth();
   const [books, setBooks] = useState<Book[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isRead, setIsRead] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [justUnlocked, setJustUnlocked] = useState<string[]>([]);
 
   const [scrollPct, setScrollPct] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -187,6 +207,44 @@ export default function LibraryPanel() {
     () => books.find((b) => b.id === selectedId) ?? null,
     [selectedId, books]
   );
+
+  // Every time a different book opens, check whether this reader already
+  // marked it read or saved it, so the two buttons show the right state.
+  useEffect(() => {
+    if (!selectedBook || !user) {
+      setIsRead(false);
+      setIsSaved(false);
+      return;
+    }
+    setIsRead(isBookRead(user.uid, selectedBook.id));
+    setIsSaved(isBookSaved(user.uid, selectedBook.id));
+  }, [selectedBook, user]);
+
+  // Clear the "new badge" note on its own after a few seconds.
+  useEffect(() => {
+    if (justUnlocked.length === 0) return;
+    const t = setTimeout(() => setJustUnlocked([]), 4000);
+    return () => clearTimeout(t);
+  }, [justUnlocked]);
+
+  function handleMarkRead() {
+    if (!user || !selectedBook || isRead) return;
+    const { newlyUnlocked } = logReadingActivity(user.uid, {
+      bookId: selectedBook.id,
+      genre: extractGenre(selectedBook),
+      completeBook: true,
+    });
+    setIsRead(true);
+    if (newlyUnlocked.length > 0) {
+      setJustUnlocked(newlyUnlocked.map((b) => BADGE_INFO[b.id].label));
+    }
+  }
+
+  function handleToggleSave() {
+    if (!user || !selectedBook) return;
+    const saved = toggleSavedBook(user.uid, selectedBook.id);
+    setIsSaved(saved.includes(selectedBook.id));
+  }
 
   function openBook(id: string) {
     setSelectedId(id);
@@ -540,6 +598,30 @@ export default function LibraryPanel() {
                   </div>
                 ))}
               </div>
+
+              <div className="detail-actions">
+                <button
+                  type="button"
+                  className={`btn ${isRead ? "btn-gold" : "btn-outline"}`}
+                  onClick={handleMarkRead}
+                  disabled={isRead}
+                >
+                  {isRead ? "Marked as read" : "Mark as read"}
+                </button>
+                <button
+                  type="button"
+                  className={`btn ${isSaved ? "btn-gold" : "btn-outline"}`}
+                  onClick={handleToggleSave}
+                >
+                  {isSaved ? "Saved" : "Save for later"}
+                </button>
+              </div>
+
+              {justUnlocked.length > 0 && (
+                <div className="detail-badge-toast" role="status">
+                  New badge: {justUnlocked.join(", ")}
+                </div>
+              )}
             </div>
           </div>
         )}
