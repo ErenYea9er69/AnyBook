@@ -5,6 +5,7 @@ import DashboardNav from "@/components/DashboardNav";
 import LibraryPanel from "@/components/LibraryPanel";
 import TodayPanel from "@/components/TodayPanel";
 import ProgressPanel from "@/components/ProgressPanel";
+import ProfilePanel from "@/components/ProfilePanel";
 
 function EmptyPanel({
   eyebrow,
@@ -45,13 +46,7 @@ function ActivePanel() {
     case "progress":
       return <ProgressPanel />;
     case "profile":
-      return (
-        <EmptyPanel
-          eyebrow="Profile"
-          title="Badges and milestones"
-          description="Every milestone you clear shows up here, starting with your first finished book."
-        />
-      );
+      return <ProfilePanel />;
     default:
       return null;
   }

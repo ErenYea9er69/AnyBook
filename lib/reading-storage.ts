@@ -41,6 +41,8 @@ export type ReadingState = {
   badges: UnlockedBadge[];
 };
 
+export const BADGE_ORDER: BadgeId[] = ["books-1", "streak-7", "streak-30", "books-100", "genres-5"];
+
 export const BADGE_INFO: Record<BadgeId, { label: string; description: string }> = {
   "books-1": { label: "First finish", description: "Complete your first book." },
   "streak-7": { label: "One week strong", description: "Read seven days in a row." },
@@ -174,15 +176,6 @@ export function isBookRead(uid: string, bookId: string): boolean {
 }
 
 /* -------------------------------- writes -------------------------------- */
-
-export function removeBookAsRead(uid: string, bookId: string): void {
-  const state = getReadingState(uid);
-  const idx = state.completedBookIds.indexOf(bookId);
-  if (idx > -1) {
-    state.completedBookIds.splice(idx, 1);
-    setReadingState(uid, state);
-  }
-}
 
 export function toggleSavedBook(uid: string, bookId: string): string[] {
   const state = getReadingState(uid);

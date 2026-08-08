@@ -1928,3 +1928,69 @@
 @media (max-width:520px){
   .progress-panel{ padding:48px 20px 48px; }
 }
+/* ---------- profile panel (append to the end of globals.css) ---------- */
+
+.profile-panel{ padding:64px 40px 64px; }
+
+.profile-panel .eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--gold);
+}
+
+.profile-title{
+  font-family:var(--serif); font-size:clamp(26px,3vw,34px);
+  color:var(--on-ink); margin:6px 0 28px;
+}
+
+.profile-card{
+  display:flex; align-items:center; gap:16px;
+  max-width:520px;
+  padding:20px 24px; border-radius:14px;
+  border:1px solid rgba(199,160,90,0.2);
+  background:rgba(199,160,90,0.05);
+  margin-bottom:44px;
+}
+.profile-avatar{
+  width:44px; height:44px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(199,160,90,0.18); color:var(--gold-bright);
+  font-family:var(--sans); font-weight:700; font-size:15px;
+}
+.profile-info{ display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+.profile-name{ font-family:var(--serif); font-size:17px; color:var(--on-ink); }
+.profile-email{ font-family:var(--sans); font-size:13px; color:var(--on-ink-dim); }
+
+.badges-heading{
+  font-family:var(--serif); font-size:20px; color:var(--on-ink); margin:0 0 16px;
+}
+
+.badges-grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
+  gap:16px;
+}
+.badge-card{
+  display:flex; flex-direction:column; gap:6px;
+  padding:20px; border-radius:var(--radius);
+  border:1px solid rgba(199,160,90,0.14);
+  color:var(--on-ink-dim);
+  opacity:0.55;
+}
+.badge-card.is-unlocked{
+  opacity:1;
+  border-color:rgba(199,160,90,0.35);
+  background:rgba(199,160,90,0.05);
+}
+.badge-icon{ color:var(--on-ink-dim); }
+.badge-card.is-unlocked .badge-icon{ color:var(--gold-bright); }
+.badge-label{ font-family:var(--serif); font-size:16px; color:var(--on-ink); }
+.badge-desc{ font-family:var(--sans); font-size:13px; line-height:1.5; }
+.badge-status{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:0.05em;
+  text-transform:uppercase; color:var(--on-ink-dim); margin-top:4px;
+}
+.badge-card.is-unlocked .badge-status{ color:var(--gold); }
+
+@media (max-width:520px){
+  .profile-panel{ padding:48px 20px 48px; }
+  .profile-card{ flex-wrap:wrap; }
+}
