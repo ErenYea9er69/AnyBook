@@ -1,9 +1,11 @@
 "use client";
 
-import { useAuth } from "@/lib/auth-context";
 import { DashboardProvider, useDashboard } from "@/lib/dashboard-context";
 import DashboardNav from "@/components/DashboardNav";
 import LibraryPanel from "@/components/LibraryPanel";
+import TodayPanel from "@/components/TodayPanel";
+import ProgressPanel from "@/components/ProgressPanel";
+import ProfilePanel from "@/components/ProfilePanel";
 
 function EmptyPanel({
   eyebrow,
@@ -20,20 +22,6 @@ function EmptyPanel({
       <h2>{title}</h2>
       <p>{description}</p>
     </div>
-  );
-}
-
-function TodayPanel() {
-  const { user } = useAuth();
-  const rawName = user?.displayName || user?.email?.split("@")[0] || "reader";
-  const firstName = rawName.split(" ")[0];
-
-  return (
-    <EmptyPanel
-      eyebrow="Welcome back"
-      title={`Good to see you, ${firstName}.`}
-      description="Your one chapter for today lands here next, one clear task and a five-minute read."
-    />
   );
 }
 
@@ -56,21 +44,9 @@ function ActivePanel() {
         />
       );
     case "progress":
-      return (
-        <EmptyPanel
-          eyebrow="Progress"
-          title="Your streak grid lands here"
-          description="A full year of squares, your current streak, and your weekly goal."
-        />
-      );
+      return <ProgressPanel />;
     case "profile":
-      return (
-        <EmptyPanel
-          eyebrow="Profile"
-          title="Badges and milestones"
-          description="Every milestone you clear shows up here, starting with your first finished book."
-        />
-      );
+      return <ProfilePanel />;
     default:
       return null;
   }
@@ -87,4 +63,4 @@ export default function AppShell() {
       </div>
     </DashboardProvider>
   );
-}   
+}
